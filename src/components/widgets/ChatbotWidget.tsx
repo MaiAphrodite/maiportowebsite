@@ -20,6 +20,14 @@ export const ChatbotWidget = () => {
     const [input, setInput] = useState('');
     const [token, setToken] = useState<string | null>(null);
 
+    // Auto-bypass in development to avoid "broken" chatbox if testing locally
+    useEffect(() => {
+        if (process.env.NODE_ENV === 'development') {
+            console.log("Dev mode: Bypassing Turnstile");
+            setToken('dev-bypass');
+        }
+    }, []);
+
     const { messages, sendMessage, status } = useChat({
         transport: new TextStreamChatTransport({
             api: '/api/chat',

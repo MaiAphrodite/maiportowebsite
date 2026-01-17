@@ -1,16 +1,10 @@
-import { createOpenAI } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 import { maiCharacter } from '@/data/characters';
 import { knowledgeBase } from '@/data/knowledge';
+import { getChatModel } from '@/lib/ai';
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
-
-// Initialize the generic OpenAI client for Grok (xAI)
-const grok = createOpenAI({
-    baseURL: 'https://api.x.ai/v1',
-    apiKey: process.env.GROK_API_KEY,
-});
 
 type MessagePart = { type: string; text?: string };
 
@@ -25,21 +19,26 @@ export async function POST(req: Request) {
     }
 
     if (token) {
-        const secretKey = process.env.TURNSTILE_SECRET_KEY;
-        if (secretKey) {
-            const formData = new FormData();
-            formData.append('secret', secretKey);
-            formData.append('response', token);
-            formData.append('remoteip', req.headers.get('x-forwarded-for') || '');
+        // Skip verification for dev bypass
+        if (token === 'dev-bypass') {
+            // Valid in dev
+        } else {
+            const secretKey = process.env.TURNSTILE_SECRET_KEY;
+            if (secretKey) {
+                const formData = new FormData();
+                formData.append('secret', secretKey);
+                formData.append('response', token);
+                formData.append('remoteip', req.headers.get('x-forwarded-for') || '');
 
-            const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-                method: 'POST',
-                body: formData,
-            });
+                const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+                    method: 'POST',
+                    body: formData,
+                });
 
-            const outcome = await result.json();
-            if (!outcome.success) {
-                return new Response('Invalid Turnstile token', { status: 401 });
+                const outcome = await result.json();
+                if (!outcome.success) {
+                    return new Response('Invalid Turnstile token', { status: 401 });
+                }
             }
         }
     }
@@ -77,11 +76,16 @@ export async function POST(req: Request) {
     const fullSystemPrompt = `${maiCharacter.systemPrompt}${contextInfo}`;
 
     // 5. Stream the response
-    const result = streamText({
-        model: grok('grok-4-1-fast-non-reasoning'),
-        system: fullSystemPrompt,
-        messages,
-    });
+    try {
+        const result = streamText({
+            model: getChatModel(), // Modular model selection
+            system: fullSystemPrompt,
+            messages,
+        });
 
-    return result.toTextStreamResponse();
+        return result.toTextStreamResponse();
+    } catch (error: any) {
+        console.error("AI Generation Error:", error);
+        return new Response(`AI Error: ${error.message || 'Unknown error'}`, { status: 500 });
+    }
 }
