@@ -1,0 +1,79 @@
+import { FileText, Folder, Music, Terminal, Globe, User } from 'lucide-react';
+
+export type FileSystemItem = {
+    id: string;
+    name: string;
+    type: 'folder' | 'file';
+    icon?: any;
+    content?: string | any; // Content for files, children for folders
+    children?: FileSystemItem[];
+    metadata?: {
+        [key: string]: any;
+    };
+};
+
+export const fileSystem: FileSystemItem[] = [
+    {
+        id: 'home',
+        name: 'Home',
+        type: 'folder',
+        children: [
+            {
+                id: 'about',
+                name: 'About Me',
+                type: 'file',
+                icon: User,
+                content: `# About Me
+Hi! I'm Mai, a creative developer who loves aesthetic interfaces.
+I built this portfolio to look like a customized Linux desktop!
+
+**Skills:**
+- React / Next.js
+- Tailwind CSS
+- Design Systems
+- Ricing Linux Distros
+`,
+            },
+            {
+                id: 'projects',
+                name: 'Projects',
+                type: 'folder',
+                icon: Folder,
+                children: [
+                    {
+                        id: 'project-1',
+                        name: 'MaiAphrodite',
+                        type: 'file',
+                        icon: Globe,
+                        content: 'This very website! Built with Next.js and Tailwind.',
+                    },
+                    {
+                        id: 'project-2',
+                        name: 'Caelestia',
+                        type: 'file',
+                        icon: Terminal,
+                        content: 'A system configuration tool for my Linux setup.',
+                    }
+                ]
+            },
+            {
+                id: 'contact',
+                name: 'Contact.md',
+                type: 'file',
+                icon: FileText,
+                content: `## Contact
+You can reach me at:
+- Email: mai@example.com
+- GitHub: github.com/mai
+- Twitter: @mai_dev
+`,
+            },
+        ],
+    },
+    {
+        id: 'trash',
+        name: 'Trash',
+        type: 'folder',
+        children: []
+    }
+];

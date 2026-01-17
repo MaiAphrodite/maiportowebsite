@@ -1,42 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --color-pastel-pink: #FFD1DC;
+  --color-pastel-lavender: #E6E6FA;
+  --color-pastel-mint: #98FF98;
+  --color-pastel-cream: #FDFDD0;
+  --color-pastel-blue: #AEC6CF;
+  --color-pastel-text: #4A4A4A;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --background: var(--color-pastel-cream);
+  --foreground: var(--color-pastel-text);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+  /* Desktop Background Gradient */
+  --desktop-bg: linear-gradient(135deg, #ECFCFF 0%, #ECFCFF 40%, #B2FCFF 80%, #5EDFFF 100%);
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  background: var(--desktop-bg);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+  /* Prevent scrolling on the desktop */
+  height: 100vh;
+  width: 100vw;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+/* Custom Utilities if needed */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 4px solid var(--color-pastel-pink);
+  border-radius: 16px;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+.window-shadow {
+  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.1);
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+.desktop-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ECFCFF 0%, #B2FCFF 100%);
+  /* Fallback */
 }
