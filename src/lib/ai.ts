@@ -13,7 +13,7 @@ interface AIConfig {
 // Default configuration (Fallbacks to Grok/xAI)
 const defaultConfig: AIConfig = {
     provider: (process.env.AI_PROVIDER as AIProvider) || 'grok',
-    modelName: process.env.AI_MODEL_NAME || 'grok-2-latest',
+    modelName: process.env.AI_MODEL_NAME || 'grok-4-1-fast-non-reasoning',
     apiKey: process.env.AI_API_KEY,
     baseURL: process.env.AI_BASE_URL,
 };
@@ -61,7 +61,7 @@ export function getChatModel() {
             // Handle legacy model names or default
             const modelName = defaultConfig.modelName.includes('grok')
                 ? defaultConfig.modelName
-                : 'grok-2-latest';
+                : 'grok-4-1-fast-non-reasoning';
 
             return grok.chat(modelName);
     }
