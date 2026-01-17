@@ -2,11 +2,13 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
+export type WindowContent = string | null | { app: string; initialPath?: string[] };
+
 export interface WindowState {
     id: string;
     title: string;
     type: 'component' | 'markdown' | 'browser';
-    content: any;
+    content: WindowContent;
     isOpen: boolean;
     isMinimized: boolean;
     isMaximized: boolean;
@@ -22,7 +24,7 @@ interface DesktopContextType {
     windows: WindowState[];
     activeWindowId: string | null;
     theme: Theme;
-    openWindow: (window: Partial<WindowState>) => void;
+    openWindow: (window: Partial<WindowState> & { id: string }) => void;
     closeWindow: (id: string) => void;
     minimizeWindow: (id: string) => void;
     toggleMaximizeWindow: (id: string) => void;
@@ -58,7 +60,7 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('mai-theme', newTheme);
     };
 
-    const openWindow = (windowData: Partial<WindowState>) => {
+    const openWindow = (windowData: Partial<WindowState> & { id: string }) => {
         const existing = windows.find(w => w.id === windowData.id);
         if (existing) {
             if (existing.isMinimized) {
@@ -69,7 +71,7 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
         }
 
         const newWindow: WindowState = {
-            id: windowData.id || Math.random().toString(36).substr(2, 9),
+            id: windowData.id,
             title: windowData.title || 'Untitled',
             type: windowData.type || 'component',
             content: windowData.content || null,
@@ -131,12 +133,16 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
     };
 
     useEffect(() => {
-        openWindow({
-            id: 'welcome',
-            title: 'Welcome to MaiOS',
-            type: 'markdown',
-            content: `# Welcome to my Desktop! 🌸\n\nThis is my interactive portfolio.\n\n- Click icons to explore.\n- Drag windows around.\n- Ask the AI mascot for help!\n\n*(This is a functional prototype, not just a wireframe!)*`
-        });
+        const welcomeExists = windows.some(w => w.id === 'welcome');
+        if (!welcomeExists && windows.length === 0) {
+            openWindow({
+                id: 'welcome',
+                title: 'Welcome to MaiOS',
+                type: 'markdown',
+                content: `# Welcome to my Desktop! 🌸\n\nThis is my interactive portfolio.\n\n- Click icons to explore.\n- Drag windows around.\n- Ask the AI mascot for help!\n\n*(This is a functional prototype, not just a wireframe!)*`
+            });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

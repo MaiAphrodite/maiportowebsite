@@ -13,7 +13,7 @@ export const Terminal = () => {
     ]);
     const [input, setInput] = useState('');
     const endRef = useRef<HTMLDivElement>(null);
-    const { closeWindow, openWindow } = useDesktop();
+    const { openWindow } = useDesktop();
 
     useEffect(() => {
         endRef.current?.scrollIntoView({ behavior: 'smooth' });

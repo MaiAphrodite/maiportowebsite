@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useDesktop } from '@/context/DesktopContext';
+import { useDesktop, type WindowContent } from '@/context/DesktopContext';
 import { Taskbar } from './Taskbar';
 import { DesktopIcons } from './DesktopIcons';
 import { Window } from './Window';
@@ -21,19 +21,19 @@ const FileExplorer = dynamic(() => import('@/components/apps/FileExplorer').then
 });
 
 // Simple content renderer based on type
-const WindowContent = ({ type, content }: { type: string, content: any }) => {
+const WindowContentRenderer = ({ type, content }: { type: string, content: WindowContent }) => {
     if (type === 'component') {
         if (content === 'terminal') return <Terminal />;
 
         // Handle Explorer (string or object config)
         if (content === 'explorer') return <FileExplorer />;
-        if (typeof content === 'object' && content.app === 'explorer') {
+        if (typeof content === 'object' && content && content.app === 'explorer') {
             return <FileExplorer initialPath={content.initialPath} />;
         }
 
-        return <div className="p-4">Component: {content}</div>;
+        return <div className="p-4">Component: {typeof content === 'string' ? content : 'Unknown'}</div>;
     }
-    if (type === 'markdown') {
+    if (type === 'markdown' && typeof content === 'string') {
         return (
             <div className="prose prose-pink max-w-none p-4">
                 <pre className="whitespace-pre-wrap font-sans text-sm text-pastel-text">
@@ -77,7 +77,7 @@ export const Desktop = () => {
                             title={win.title}
                             zIndex={win.zIndex}
                         >
-                            <WindowContent type={win.type} content={win.content} />
+                            <WindowContentRenderer type={win.type} content={win.content} />
                         </Window>
                     )
                 ))}

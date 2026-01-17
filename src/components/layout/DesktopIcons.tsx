@@ -1,13 +1,13 @@
 "use client";
 
 import React from 'react';
-import { useDesktop } from '@/context/DesktopContext';
-import { fileSystem } from '@/data/fileSystem';
+import { useDesktop, type WindowContent } from '@/context/DesktopContext';
+import { fileSystem, FileSystemItem } from '@/data/fileSystem';
 
 export const DesktopIcons = () => {
     const { openWindow } = useDesktop();
 
-    const handleIconClick = (item: any) => {
+    const handleIconClick = (item: FileSystemItem) => {
         if (item.type === 'folder') {
             openWindow({
                 id: item.id,
@@ -16,9 +16,9 @@ export const DesktopIcons = () => {
                 content: { app: 'explorer', initialPath: [item.id] }
             });
         } else if (item.id === 'about') {
-            openWindow({ id: 'about', title: 'About Me', type: 'markdown', content: item.content });
+            openWindow({ id: 'about', title: 'About Me', type: 'markdown', content: item.content as WindowContent });
         } else {
-            openWindow({ id: item.id, title: item.name, type: 'markdown', content: item.content });
+            openWindow({ id: item.id, title: item.name, type: 'markdown', content: item.content as WindowContent });
         }
     };
 
