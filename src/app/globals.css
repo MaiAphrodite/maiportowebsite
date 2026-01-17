@@ -119,3 +119,40 @@ body {
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+/* --- MOBILE FIXES --- */
+@media (max-width: 768px) {
+
+  /* Disable text selection on interactive elements */
+  button,
+  .cursor-pointer {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+
+  /* Thinner scrollbars on mobile */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  /* Prevent overscroll bounce on iOS */
+  body {
+    overscroll-behavior: none;
+  }
+
+  /* Ensure proper touch behavior */
+  .desktop-container {
+    touch-action: manipulation;
+  }
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: max(0px)) {
+  .desktop-container {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+}

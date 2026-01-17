@@ -3,9 +3,11 @@
 import React from 'react';
 import { useDesktop, type WindowContent } from '@/context/DesktopContext';
 import { fileSystem, FileSystemItem } from '@/data/fileSystem';
+import { useMobile } from '@/hooks/useMobile';
 
 export const DesktopIcons = () => {
     const { openWindow } = useDesktop();
+    const isMobile = useMobile();
 
     const handleIconClick = (item: FileSystemItem) => {
         if (item.type === 'folder') {
@@ -22,32 +24,72 @@ export const DesktopIcons = () => {
         }
     };
 
+    const handleInteraction = (item: FileSystemItem) => {
+        // Single tap on mobile, double-click on desktop
+        if (isMobile) {
+            handleIconClick(item);
+        }
+    };
+
     return (
-        <div className="absolute top-20 left-4 grid grid-flow-col grid-rows-[repeat(auto-fill,100px)] gap-6 h-[calc(100vh-80px)] w-fit z-0">
+        <div className={`
+            absolute z-0
+            ${isMobile
+                ? 'top-16 left-0 right-0 px-4 flex flex-wrap gap-4 justify-center'
+                : 'top-20 left-4 grid grid-flow-col grid-rows-[repeat(auto-fill,100px)] gap-6 h-[calc(100vh-80px)] w-fit'
+            }
+        `}>
             {fileSystem.map((item) => (
                 <div
                     key={item.id}
-                    onDoubleClick={() => handleIconClick(item)}
-                    className="w-24 h-24 flex flex-col items-center justify-center p-2 rounded-lg hover:bg-mai-surface-dim/30 transition-colors cursor-pointer group"
+                    onClick={() => handleInteraction(item)}
+                    onDoubleClick={() => !isMobile && handleIconClick(item)}
+                    className={`
+                        flex flex-col items-center justify-center p-2 rounded-lg 
+                        hover:bg-mai-surface-dim/30 transition-colors cursor-pointer group
+                        ${isMobile ? 'w-20 h-20' : 'w-24 h-24'}
+                    `}
                 >
-                    <div className="w-12 h-12 bg-mai-surface-dim rounded-xl mb-2 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform backdrop-blur-sm border border-mai-border/20">
-                        {item.type === 'folder' && <div className="text-mai-primary text-2xl">📁</div>}
-                        {item.type === 'file' && <div className="text-mai-secondary text-2xl">📄</div>}
+                    <div className={`
+                        bg-mai-surface-dim rounded-xl mb-2 flex items-center justify-center 
+                        shadow-sm group-hover:scale-105 transition-transform backdrop-blur-sm 
+                        border border-mai-border/20
+                        ${isMobile ? 'w-10 h-10' : 'w-12 h-12'}
+                    `}>
+                        {item.type === 'folder' && <div className={`text-mai-primary ${isMobile ? 'text-xl' : 'text-2xl'}`}>📁</div>}
+                        {item.type === 'file' && <div className={`text-mai-secondary ${isMobile ? 'text-xl' : 'text-2xl'}`}>📄</div>}
                     </div>
-                    <span className="text-sm font-medium text-mai-text text-center leading-tight drop-shadow-md bg-mai-surface/40 backdrop-blur-md px-2 rounded-md border border-mai-border/10">
+                    <span className={`
+                        font-medium text-mai-text text-center leading-tight drop-shadow-md 
+                        bg-mai-surface/40 backdrop-blur-md px-2 rounded-md border border-mai-border/10
+                        ${isMobile ? 'text-xs' : 'text-sm'}
+                    `}>
                         {item.name}
                     </span>
                 </div>
             ))}
 
             <div
-                onClick={() => openWindow({ id: 'terminal', title: 'Terminal', type: 'component', content: 'terminal' })}
-                className="w-24 h-24 flex flex-col items-center justify-center p-2 rounded-lg hover:bg-mai-surface-dim/30 transition-colors cursor-pointer group"
+                onClick={() => isMobile && openWindow({ id: 'terminal', title: 'Terminal', type: 'component', content: 'terminal' })}
+                onDoubleClick={() => !isMobile && openWindow({ id: 'terminal', title: 'Terminal', type: 'component', content: 'terminal' })}
+                className={`
+                    flex flex-col items-center justify-center p-2 rounded-lg 
+                    hover:bg-mai-surface-dim/30 transition-colors cursor-pointer group
+                    ${isMobile ? 'w-20 h-20' : 'w-24 h-24'}
+                `}
             >
-                <div className="w-12 h-12 bg-gray-800 rounded-xl mb-2 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform border border-mai-border/20">
-                    <span className="text-white font-mono text-xs">{">_"}</span>
+                <div className={`
+                    bg-gray-800 rounded-xl mb-2 flex items-center justify-center 
+                    shadow-sm group-hover:scale-105 transition-transform border border-mai-border/20
+                    ${isMobile ? 'w-10 h-10' : 'w-12 h-12'}
+                `}>
+                    <span className={`text-white font-mono ${isMobile ? 'text-[10px]' : 'text-xs'}`}>{">_"}</span>
                 </div>
-                <span className="text-sm font-medium text-mai-text text-center leading-tight drop-shadow-md bg-mai-surface/40 backdrop-blur-md px-2 rounded-md border border-mai-border/10">
+                <span className={`
+                    font-medium text-mai-text text-center leading-tight drop-shadow-md 
+                    bg-mai-surface/40 backdrop-blur-md px-2 rounded-md border border-mai-border/10
+                    ${isMobile ? 'text-xs' : 'text-sm'}
+                `}>
                     Terminal
                 </span>
             </div>
