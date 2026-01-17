@@ -19,6 +19,12 @@ export const ChatbotWidget = () => {
 
     const [input, setInput] = useState('');
     const [token, setToken] = useState<string | null>(null);
+    const tokenRef = useRef<string | null>(null);
+
+    // Update ref when state changes
+    useEffect(() => {
+        tokenRef.current = token;
+    }, [token]);
 
     // Auto-bypass in development to avoid "broken" chatbox if testing locally
     useEffect(() => {
@@ -32,6 +38,9 @@ export const ChatbotWidget = () => {
         transport: new TextStreamChatTransport({
             api: '/api/chat',
             prepareSendMessagesRequest: async ({ messages: msgs, ...rest }) => {
+                const currentToken = tokenRef.current;
+                console.log("[Front] Sending message with token:", currentToken ? "Present" : "Missing");
+
                 // Transform messages: extract content from parts for API compatibility
                 const transformedMessages = msgs.map((msg: ChatMessage) => {
                     let content = msg.content;
@@ -50,7 +59,7 @@ export const ChatbotWidget = () => {
                     ...rest,
                     body: {
                         messages: transformedMessages,
-                        token: token // Pass Turnstile token
+                        token: currentToken // Use ref to avoid stale closure
                     }
                 };
             }
