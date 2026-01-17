@@ -16,7 +16,33 @@ type MessagePart = { type: string; text?: string };
 
 export async function POST(req: Request) {
     const body = await req.json();
-    const { messages } = body;
+    const { messages, token } = body;
+
+    // 0. Verify Turnstile Token
+    if (!token && process.env.NODE_ENV === 'production' && process.env.TURNSTILE_SECRET_KEY) {
+        // Strict check in prod, can be loose in dev if key missing
+        return new Response('Missing Turnstile token', { status: 401 });
+    }
+
+    if (token) {
+        const secretKey = process.env.TURNSTILE_SECRET_KEY;
+        if (secretKey) {
+            const formData = new FormData();
+            formData.append('secret', secretKey);
+            formData.append('response', token);
+            formData.append('remoteip', req.headers.get('x-forwarded-for') || '');
+
+            const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const outcome = await result.json();
+            if (!outcome.success) {
+                return new Response('Invalid Turnstile token', { status: 401 });
+            }
+        }
+    }
 
     // 1. Get the last user message to perform "RAG"
     const lastMessage = messages[messages.length - 1];

@@ -7,6 +7,7 @@ import { useChat } from '@ai-sdk/react';
 import { TextStreamChatTransport } from 'ai';
 import { maiCharacter } from '@/data/characters';
 import { useMobile } from '@/hooks/useMobile';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 type MessagePart = { type: string; text?: string };
 type ChatMessage = { id: string; role: string; content?: string; parts?: MessagePart[] };
@@ -17,6 +18,7 @@ export const ChatbotWidget = () => {
     const isMobile = useMobile();
 
     const [input, setInput] = useState('');
+    const [token, setToken] = useState<string | null>(null);
 
     const { messages, sendMessage, status } = useChat({
         transport: new TextStreamChatTransport({
@@ -38,7 +40,10 @@ export const ChatbotWidget = () => {
                 });
                 return {
                     ...rest,
-                    body: { messages: transformedMessages }
+                    body: {
+                        messages: transformedMessages,
+                        token: token // Pass Turnstile token
+                    }
                 };
             }
         }),
@@ -149,22 +154,34 @@ export const ChatbotWidget = () => {
                     </div>
 
                     {/* Input */}
-                    <form onSubmit={handleSubmit} className="p-2 md:p-3 bg-mai-surface-dim border-t border-mai-border/20 flex gap-2">
-                        <input
-                            value={input || ''}
-                            onChange={handleInputChange}
-                            placeholder="Type a message..."
-                            disabled={isLoading}
-                            className="w-full px-3 py-2 rounded-full border border-mai-border/30 bg-mai-surface text-mai-text text-sm focus:outline-none focus:border-mai-primary disabled:opacity-50"
-                        />
-                        <button
-                            type="submit"
-                            disabled={isLoading || !(input || '').trim()}
-                            className="p-2 bg-mai-primary text-white rounded-full hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <Send size={16} />
-                        </button>
-                    </form>
+                    <div className="p-2 md:p-3 bg-mai-surface-dim border-t border-mai-border/20">
+                        {!token ? (
+                            <div className="flex justify-center py-2 min-h-[50px] items-center">
+                                <Turnstile
+                                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                                    onSuccess={(token) => setToken(token)}
+                                    options={{ theme: 'light', size: 'flexible' }}
+                                />
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSubmit} className="flex gap-2">
+                                <input
+                                    value={input || ''}
+                                    onChange={handleInputChange}
+                                    placeholder="Type a message..."
+                                    disabled={isLoading}
+                                    className="w-full px-3 py-2 rounded-full border border-mai-border/30 bg-mai-surface text-mai-text text-sm focus:outline-none focus:border-mai-primary disabled:opacity-50"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={isLoading || !(input || '').trim()}
+                                    className="p-2 bg-mai-primary text-white rounded-full hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <Send size={16} />
+                                </button>
+                            </form>
+                        )}
+                    </div>
                 </div>
             )}
 
