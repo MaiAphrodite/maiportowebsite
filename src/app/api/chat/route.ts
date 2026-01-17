@@ -13,18 +13,21 @@ export async function POST(req: Request) {
     const { messages, token } = body;
 
     // 0. Verify Turnstile Token
+    console.log("[API] Processing chat request");
+
     if (!token && process.env.NODE_ENV === 'production' && process.env.TURNSTILE_SECRET_KEY) {
-        // Strict check in prod, can be loose in dev if key missing
+        console.error("[API] Missing Turnstile token in production");
         return new Response('Missing Turnstile token', { status: 401 });
     }
 
     if (token) {
         // Skip verification for dev bypass
         if (token === 'dev-bypass') {
-            // Valid in dev
+            console.log("[API] Dev bypass used");
         } else {
             const secretKey = process.env.TURNSTILE_SECRET_KEY;
             if (secretKey) {
+                console.log("[API] Verifying Turnstile token...");
                 const formData = new FormData();
                 formData.append('secret', secretKey);
                 formData.append('response', token);
@@ -36,9 +39,14 @@ export async function POST(req: Request) {
                 });
 
                 const outcome = await result.json();
+                console.log("[API] Turnstile outcome:", outcome.success);
+
                 if (!outcome.success) {
+                    console.error("[API] Turnstile verification failed:", JSON.stringify(outcome));
                     return new Response('Invalid Turnstile token', { status: 401 });
                 }
+            } else {
+                console.warn("[API] Token provided but TURNSTILE_SECRET_KEY is missing");
             }
         }
     }
