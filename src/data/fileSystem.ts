@@ -68,6 +68,13 @@ You can reach me at:
 - Twitter: @mai_dev
 `,
             },
+            {
+                id: 'welcome-txt',
+                name: 'Welcome.txt',
+                type: 'file',
+                icon: FileText,
+                content: 'Welcome to MaiOS!\n\nThis is a text file on the desktop.\nDouble-click to open me!',
+            },
         ],
     },
     {

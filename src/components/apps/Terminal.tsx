@@ -1,57 +1,69 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useDesktop } from '@/context/DesktopContext';
 
 export const Terminal = () => {
+    const [lines, setLines] = useState<string[]>([
+        "MaiOS [Version 1.0.0]",
+        "(c) Mai Corporation. All rights reserved.",
+        "",
+        "Type 'help' for available commands.",
+        ""
+    ]);
+    const [input, setInput] = useState('');
+    const endRef = useRef<HTMLDivElement>(null);
+    const { closeWindow, openWindow } = useDesktop();
+
+    useEffect(() => {
+        endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [lines]);
+
+    const handleCommand = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            const cmd = input.trim().toLowerCase();
+            const newLines = [...lines, `maios@user:~$ ${input}`];
+
+            if (cmd === 'help') {
+                newLines.push("Available commands:", "  help     - Show this help message", "  clear    - Clear terminal", "  about    - Open About Me", "  exit     - Close terminal", "  ls       - List files (simulated)");
+            } else if (cmd === 'clear') {
+                setLines([]);
+                setInput('');
+                return;
+            } else if (cmd === 'exit') {
+                // Ideally close the window, but we need the ID. For now just say bye.
+                newLines.push("Session terminated.");
+            } else if (cmd === 'about') {
+                newLines.push("Opening About Me...");
+                openWindow({ id: 'about', title: 'About Me', type: 'markdown', content: '# About Me\n...' });
+            } else if (cmd === 'ls') {
+                newLines.push("Documents  Downloads  Music  Pictures  Videos  welcome.txt");
+            } else if (cmd !== '') {
+                newLines.push(`Command not found: ${cmd}`);
+            }
+
+            setLines(newLines);
+            setInput('');
+        }
+    };
+
     return (
-        <div className="bg-[#282a36] h-full w-full text-[#f8f8f2] font-mono p-4 text-sm overflow-auto">
-            <div className="mb-4">
-                <span className="text-[#50fa7b]">mai@portfolio</span>
-                <span className="text-[#f8f8f2]">:</span>
-                <span className="text-[#8be9fd]">~</span>
-                <span className="text-[#f8f8f2]">$ fetch</span>
+        <div className="bg-[#1E1E1E] text-mai-secondary p-4 h-full font-mono text-sm overflow-auto" onClick={(e) => e.stopPropagation()}>
+            {lines.map((line, i) => (
+                <div key={i} className="whitespace-pre-wrap mb-1">{line}</div>
+            ))}
+            <div className="flex items-center gap-2">
+                <span className="text-mai-primary">maios@user:~$</span>
+                <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleCommand}
+                    className="bg-transparent border-none outline-none flex-1 text-white"
+                    autoFocus
+                />
             </div>
-
-            <div className="flex gap-6">
-                {/* ASCII Art or Character Image */}
-                <div className="text-[#ff79c6] hidden sm:block select-none">
-                    {`       /\\
-      /  \\
-     /    \\
-    /      \\
-   /   ok   \\
-  /__________\\
-  |          |
-  |  (>_<)   |
-  |__________|`}
-                </div>
-
-                <div className="flex flex-col gap-1">
-                    <div><span className="text-[#ff79c6]">OS</span>: Portfolio OS v1.0</div>
-                    <div><span className="text-[#ff79c6]">Host</span>: Web Browser</div>
-                    <div><span className="text-[#ff79c6]">Kernel</span>: Next.js 15</div>
-                    <div><span className="text-[#ff79c6]">Shell</span>: Zsh (Simulated)</div>
-                    <div><span className="text-[#ff79c6]">Resolution</span>: Responsive</div>
-                    <div><span className="text-[#ff79c6]">DE</span>: React Desktop Environment</div>
-                    <div><span className="text-[#ff79c6]">WM</span>: Tiling (Manual)</div>
-                    <div><span className="text-[#ff79c6]">Theme</span>: Pastel Cute</div>
-                    <div className="mt-2 flex gap-1">
-                        <div className="w-4 h-4 bg-[#ff5555]"></div>
-                        <div className="w-4 h-4 bg-[#50fa7b]"></div>
-                        <div className="w-4 h-4 bg-[#f1fa8c]"></div>
-                        <div className="w-4 h-4 bg-[#bd93f9]"></div>
-                        <div className="w-4 h-4 bg-[#ff79c6]"></div>
-                        <div className="w-4 h-4 bg-[#8be9fd]"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="mt-4">
-                <span className="text-[#50fa7b]">mai@portfolio</span>
-                <span className="text-[#f8f8f2]">:</span>
-                <span className="text-[#8be9fd]">~</span>
-                <span className="text-[#f8f8f2]">$ <span className="animate-pulse">_</span></span>
-            </div>
+            <div ref={endRef} />
         </div>
     );
 };

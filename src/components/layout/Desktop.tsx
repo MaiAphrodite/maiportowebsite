@@ -6,15 +6,31 @@ import { Taskbar } from './Taskbar';
 import { DesktopIcons } from './DesktopIcons';
 import { Window } from './Window';
 import { ChatbotWidget } from '@/components/widgets/ChatbotWidget';
-import { Terminal } from '@/components/apps/Terminal';
-import { FileExplorer } from '@/components/apps/FileExplorer';
 import { AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
+
+// Lazy load heavy apps
+const Terminal = dynamic(() => import('@/components/apps/Terminal').then(mod => mod.Terminal), {
+    loading: () => <div className="p-4 text-pastel-text">Loading Terminal...</div>,
+    ssr: false // Apps are client-side only typically
+});
+
+const FileExplorer = dynamic(() => import('@/components/apps/FileExplorer').then(mod => mod.FileExplorer), {
+    loading: () => <div className="p-4 text-pastel-text">Loading Explorer...</div>,
+    ssr: false
+});
 
 // Simple content renderer based on type
 const WindowContent = ({ type, content }: { type: string, content: any }) => {
     if (type === 'component') {
         if (content === 'terminal') return <Terminal />;
+
+        // Handle Explorer (string or object config)
         if (content === 'explorer') return <FileExplorer />;
+        if (typeof content === 'object' && content.app === 'explorer') {
+            return <FileExplorer initialPath={content.initialPath} />;
+        }
+
         return <div className="p-4">Component: {content}</div>;
     }
     if (type === 'markdown') {
@@ -60,7 +76,6 @@ export const Desktop = () => {
                             id={win.id}
                             title={win.title}
                             zIndex={win.zIndex}
-                            initialPosition={win.position}
                         >
                             <WindowContent type={win.type} content={win.content} />
                         </Window>

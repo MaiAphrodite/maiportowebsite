@@ -1,43 +1,77 @@
 @import "tailwindcss";
 
 @theme {
-  --color-pastel-pink: #FFD1DC;
-  --color-pastel-lavender: #E6E6FA;
-  --color-pastel-mint: #98FF98;
-  --color-pastel-cream: #FDFDD0;
-  --color-pastel-blue: #AEC6CF;
-  --color-pastel-text: #4A4A4A;
+  --color-mai-primary: var(--mai-primary);
+  --color-mai-secondary: var(--mai-secondary);
+  --color-mai-surface: var(--mai-surface);
+  --color-mai-surface-dim: var(--mai-surface-dim);
+  --color-mai-text: var(--mai-text);
+  --color-mai-subtext: var(--mai-subtext);
+  --color-mai-border: var(--mai-border);
 }
 
 :root {
-  --background: var(--color-pastel-cream);
-  --foreground: var(--color-pastel-text);
+  /* LIGHT THEME (Pastel/Day) */
+  --mai-primary: #FF69B4;
+  /* Hot Pink */
+  --mai-secondary: #00FFFF;
+  /* Cyan */
+
+  --mai-surface: rgba(255, 255, 255, 0.9);
+  --mai-surface-dim: rgba(255, 255, 255, 0.5);
+
+  --mai-text: #4A4A4A;
+  --mai-subtext: #6B7280;
+
+  --mai-border: #FFD1DC;
+  /* Pastel Pink Border */
 
   /* Desktop Background Gradient */
-  --desktop-bg: linear-gradient(135deg, #ECFCFF 0%, #ECFCFF 40%, #B2FCFF 80%, #5EDFFF 100%);
+  --desktop-bg: linear-gradient(135deg, #FDFDD0 0%, #FFD1DC 100%);
+}
+
+[data-theme='dark'] {
+  /* DARK THEME (Gamer/Night) */
+  --mai-primary: #FF69B4;
+  /* Keep Brand Pink */
+  --mai-secondary: #00FFFF;
+  /* Keep Brand Cyan */
+
+  --mai-surface: rgba(45, 45, 58, 0.95);
+  /* #2D2D3A */
+  --mai-surface-dim: rgba(30, 30, 46, 0.8);
+
+  --mai-text: #E0E0E0;
+  --mai-subtext: #A0A0A0;
+
+  --mai-border: #FF69B4;
+  /* Neon Pink Border */
+
+  --desktop-bg: linear-gradient(135deg, #1E1E2E 0%, #181825 100%);
 }
 
 body {
-  color: var(--foreground);
+  color: var(--mai-text);
   background: var(--desktop-bg);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow: hidden;
-  /* Prevent scrolling on the desktop */
   height: 100vh;
   width: 100vw;
+  transition: color 0.3s ease;
 }
 
-/* Custom Utilities if needed */
+/* Utilities */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--mai-surface);
   backdrop-filter: blur(10px);
-  border: 4px solid var(--color-pastel-pink);
+  border: 4px solid var(--mai-border);
   border-radius: 16px;
   box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .window-shadow {
-  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.2);
 }
 
 .desktop-container {
@@ -45,6 +79,43 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: linear-gradient(135deg, #ECFCFF 0%, #B2FCFF 100%);
-  /* Fallback */
+  background: var(--desktop-bg);
+  /* Fallback uses var, browser handles it */
+  transition: background 0.5s ease;
+}
+
+/* --- CUTE SCROLLBARS --- */
+/* Target all scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 9999px;
+  margin: 4px;
+}
+
+/* Thumb */
+::-webkit-scrollbar-thumb {
+  background: var(--mai-border);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  /* Creates padding effect if background-clip is used, but distinct border is safer for simple cute look */
+  background-clip: content-box;
+  /* This makes the white border logic work to create a 'floating' thumb */
+}
+
+/* Thumb Hover */
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--mai-primary);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Handle corner */
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
