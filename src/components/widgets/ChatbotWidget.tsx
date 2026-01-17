@@ -91,6 +91,12 @@ export const ChatbotWidget = () => {
         try {
             await sendMessage({ text: input });
             setInput('');
+
+            // Clear token to force re-verification for next message
+            // (Unless we are in dev bypass mode)
+            if (token !== 'dev-bypass') {
+                setToken(null);
+            }
         } catch (error) {
             console.error("Start stream error:", error);
         }
