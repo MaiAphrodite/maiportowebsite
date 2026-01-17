@@ -1,15 +1,13 @@
-import { FileText, Folder, Music, Terminal, Globe, User } from 'lucide-react';
+import { FileText, Folder, Terminal, Globe, User, LucideIcon } from 'lucide-react';
 
 export type FileSystemItem = {
     id: string;
     name: string;
     type: 'folder' | 'file';
-    icon?: any;
-    content?: string | any; // Content for files, children for folders
+    icon?: LucideIcon;
+    content?: string | Record<string, unknown>;
     children?: FileSystemItem[];
-    metadata?: {
-        [key: string]: any;
-    };
+    metadata?: Record<string, string | number | boolean>;
 };
 
 export const fileSystem: FileSystemItem[] = [

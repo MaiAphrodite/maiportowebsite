@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { fileSystem, FileSystemItem } from '@/data/fileSystem';
-import { useDesktop } from '@/context/DesktopContext';
+import { useDesktop, type WindowContent } from '@/context/DesktopContext';
 import { ExplorerToolbar } from './explorer/ExplorerToolbar';
 import { ExplorerGrid } from './explorer/ExplorerGrid';
 
@@ -32,7 +32,7 @@ export const FileExplorer = ({ initialPath = ['home'] }: FileExplorerProps) => {
         if (item.type === 'folder') {
             setCurrentPath([...currentPath, item.id]);
         } else {
-            openWindow({ id: item.id, title: item.name, type: 'markdown', content: item.content });
+            openWindow({ id: item.id, title: item.name, type: 'markdown', content: item.content as WindowContent });
         }
     };
 

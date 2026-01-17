@@ -6,11 +6,9 @@ import { Clock, Volume2, Wifi, Moon, Sun } from 'lucide-react';
 
 export const SystemTray = () => {
     const { theme, toggleTheme } = useDesktop();
-    const [mounted, setMounted] = useState(false);
     const [time, setTime] = useState(new Date());
 
     useEffect(() => {
-        setMounted(true);
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
@@ -37,8 +35,8 @@ export const SystemTray = () => {
 
             <div className="flex items-center gap-2 font-mono text-sm font-medium">
                 <Clock size={16} className="text-mai-primary" />
-                <span>
-                    {mounted ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '00:00'}
+                <span suppressHydrationWarning>
+                    {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
             </div>
         </div>
