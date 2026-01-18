@@ -79,9 +79,7 @@ export const Desktop = () => {
                     !win.isMinimized && (
                         <Window
                             key={win.id}
-                            id={win.id}
-                            title={win.title}
-                            zIndex={win.zIndex}
+                            windowState={win}
                         >
                             <WindowContentRenderer type={win.type} content={win.content} />
                         </Window>

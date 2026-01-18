@@ -2,11 +2,12 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { useDesktop } from '@/context/DesktopContext';
-import { X } from 'lucide-react';
+import { useDesktopActions, useDesktopState } from '@/context/DesktopContext';
+// import { X } from 'lucide-react'; // Unused
 
 export const ChatbotWidget = () => {
-    const { openWindow, windows } = useDesktop();
+    const { openWindow } = useDesktopActions();
+    const { windows } = useDesktopState();
     const isWindowOpen = windows.some(w => w.id === 'chat-stream');
 
     // If the window is already open (active or minimized), don't show the toast
