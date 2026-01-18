@@ -19,6 +19,14 @@ export const DesktopIcons = () => {
             });
         } else if (item.id === 'about') {
             openWindow({ id: 'about', title: 'About Me', type: 'markdown', content: item.content as WindowContent });
+        } else if (item.id === 'browser') {
+            openWindow({
+                id: 'browser',
+                title: 'MaiNet Navigator',
+                type: 'component',
+                content: 'browser',
+                size: { width: 1024, height: 768 }
+            });
         } else {
             openWindow({ id: item.id, title: item.name, type: 'markdown', content: item.content as WindowContent });
         }
