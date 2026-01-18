@@ -297,7 +297,7 @@ const ChatSidebar = React.memo(({
             </div>
 
             {/* Chat Input */}
-            <div className="px-3 pb-3 pt-2 border-t-2 border-mai-border relative">
+            <div className="px-3 pt-2 border-t-2 border-mai-border relative" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
                 <form onSubmit={handleSubmit} className="flex gap-2 min-w-0">
                     <input
                         type="text"
