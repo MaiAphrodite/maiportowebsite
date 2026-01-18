@@ -30,6 +30,7 @@ interface DesktopContextType {
     toggleMaximizeWindow: (id: string) => void;
     focusWindow: (id: string) => void;
     updateWindowPosition: (id: string, position: { x: number; y: number }) => void;
+    updateWindowSize: (id: string, size: { width: number; height: number }) => void;
     toggleTheme: () => void;
 }
 
@@ -145,6 +146,10 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const updateWindowSize = (id: string, size: { width: number; height: number }) => {
+        setWindows(prev => prev.map(w => w.id === id ? { ...w, size } : w));
+    };
+
     return (
         <DesktopContext.Provider value={{
             windows,
@@ -156,6 +161,7 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
             toggleMaximizeWindow,
             focusWindow,
             updateWindowPosition,
+            updateWindowSize,
             toggleTheme
         }}>
             {children}
