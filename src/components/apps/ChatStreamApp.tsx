@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Send, MoreHorizontal, ThumbsUp, Heart, RotateCw, Maximize2 } from 'lucide-react';
+import { Send, MoreHorizontal, Heart, RotateCw, Maximize2 } from 'lucide-react';
 import { useChat } from '@ai-sdk/react';
 import { TextStreamChatTransport } from 'ai';
 import { maiCharacter } from '@/data/characters';
@@ -128,7 +128,7 @@ const StreamFeed = React.memo(({
     return (
         <div className={`
             relative bg-black flex flex-col justify-center items-center overflow-hidden group
-            ${isCompact ? 'w-full aspect-video shrink-0' : 'flex-[3] min-w-[320px] min-h-0'}
+            ${isCompact ? 'w-full aspect-video shrink-0' : 'flex-1 min-w-0'}
         `}>
             {/* Overlay UI */}
             <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md z-10 flex items-center gap-1">
@@ -222,7 +222,7 @@ const ChatSidebar = React.memo(({
             bg-[#181818] border-gray-700 flex flex-col 
             ${isCompact
                 ? 'flex-1 w-full border-t min-h-0'
-                : 'flex-1 min-w-[300px] md:max-w-[350px] border-l min-h-0'
+                : 'w-[350px] flex-none border-l min-h-0'
             }
         `}>
             <div className="p-3 border-b border-gray-700 flex justify-between items-center bg-[#181818]">
@@ -265,7 +265,7 @@ const ChatSidebar = React.memo(({
             </div>
 
             {/* Chat Input */}
-            <div className="p-3 bg-[#181818] border-t border-gray-700">
+            <div className="p-3 bg-[#181818] border-t border-gray-700 relative">
                 <form onSubmit={handleSubmit} className="flex gap-2">
                     <input
                         type="text"
@@ -286,15 +286,18 @@ const ChatSidebar = React.memo(({
                         <Heart size={20} className="hover:text-red-500 cursor-pointer transition-colors" />
                     </div>
                 </form>
-                {/* Turnstile (Hidden/Invisible) */}
-                <div className="hidden">
-                    <Turnstile
-                        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
-                        onSuccess={setToken}
-                        onError={() => setToken(null)}
-                        onExpire={() => setToken(null)}
-                    />
-                </div>
+                {/* Turnstile (Visible for interaction if needed) */}
+                {!token && (
+                    <div className="absolute bottom-full left-0 right-0 flex justify-center pb-2 pointer-events-auto">
+                        <Turnstile
+                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
+                            onSuccess={setToken}
+                            onError={() => setToken(null)}
+                            onExpire={() => setToken(null)}
+                            options={{ theme: 'dark', size: 'flexible' }}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );
