@@ -73,6 +73,7 @@ You can reach me at:
                 icon: FileText,
                 content: 'Welcome to MaiOS!\n\nThis is a text file on the desktop.\nDouble-click to open me!',
             },
+
         ],
     },
     {
@@ -80,5 +81,15 @@ You can reach me at:
         name: 'Trash',
         type: 'folder',
         children: []
+    },
+    {
+        id: 'browser',
+        name: 'MaiNet Link',
+        type: 'file',
+        icon: Globe,
+        content: 'browser', // Component content ID
+        metadata: {
+            app: 'browser'
+        }
     }
 ];

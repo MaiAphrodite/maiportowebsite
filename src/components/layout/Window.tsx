@@ -70,9 +70,9 @@ export const Window = React.memo(({ windowState, children }: WindowProps) => {
                 style={{
                     zIndex: cappedZIndex,
                     ...(isMaximized ? {
-                        top: isMobile ? '48px' : '56px',
+                        top: isMobile ? '32px' : '56px',
                         width: '100%',
-                        height: isMobile ? 'calc(100vh - 48px)' : 'calc(100vh - 56px)',
+                        height: isMobile ? 'calc(100vh - 32px - 48px)' : 'calc(100vh - 56px)',
                     } : {
                         width: `${windowState.size?.width || 600}px`,
                         height: `${windowState.size?.height || 400}px`,

@@ -2,9 +2,13 @@
 
 import React from 'react';
 import { useDesktop, type WindowContent } from '@/context/DesktopContext';
+import { useMobile } from '@/hooks/useMobile';
 import { Taskbar } from './Taskbar';
 import { DesktopIcons } from './DesktopIcons';
 import { Window } from './Window';
+import { MobileHome } from '../mobile/MobileHome';
+import { MobileStatusBar } from '../mobile/MobileStatusBar';
+import { MobileNavBar } from '../mobile/MobileNavBar';
 import { ChatbotWidget } from '@/components/widgets/ChatbotWidget';
 import { AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
@@ -25,11 +29,17 @@ const ChatStreamApp = dynamic(() => import('@/components/apps/ChatStreamApp').th
     ssr: false
 });
 
+const BrowserApp = dynamic(() => import('@/components/apps/browser/BrowserApp').then(mod => mod.BrowserApp), {
+    loading: () => <div className="p-4 text-pastel-text">Connecting to MaiNet...</div>,
+    ssr: false
+});
+
 // Simple content renderer based on type
 const WindowContentRenderer = ({ type, content }: { type: string, content: WindowContent }) => {
     if (type === 'component') {
         if (content === 'terminal') return <Terminal />;
         if (content === 'stream-chat') return <ChatStreamApp />;
+        if (content === 'browser') return <BrowserApp />;
 
         // Handle Explorer (string or object config)
         if (content === 'explorer') return <FileExplorer />;
@@ -53,6 +63,7 @@ const WindowContentRenderer = ({ type, content }: { type: string, content: Windo
 
 export const Desktop = () => {
     const { windows } = useDesktop();
+    const isMobile = useMobile();
 
     return (
         <div
@@ -67,8 +78,8 @@ export const Desktop = () => {
         >
             {/* Background / Wallpaper handled by CSS var */}
 
-            {/* Desktop Icons */}
-            <DesktopIcons />
+            {/* Desktop Icons (Desktop) or Mobile Home (Mobile) */}
+            {isMobile ? <MobileHome /> : <DesktopIcons />}
 
             {/* Widgets Layer */}
             <ChatbotWidget />
@@ -87,8 +98,15 @@ export const Desktop = () => {
                 ))}
             </AnimatePresence>
 
-            {/* Taskbar Layer */}
-            <Taskbar />
+            {/* Taskbar / Nav Layer */}
+            {isMobile ? (
+                <>
+                    <MobileStatusBar />
+                    <MobileNavBar />
+                </>
+            ) : (
+                <Taskbar />
+            )}
         </div>
     );
 };
