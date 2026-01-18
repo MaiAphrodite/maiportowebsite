@@ -52,16 +52,16 @@ export const DesktopIcons = () => {
                 >
                     <div className={`
                         bg-mai-surface-dim rounded-xl mb-2 flex items-center justify-center 
-                        shadow-sm group-hover:scale-105 transition-transform backdrop-blur-sm 
-                        border border-mai-border/20
+                        group-hover:scale-105 transition-transform
+                        border-2 border-mai-border
                         ${isMobile ? 'w-10 h-10' : 'w-12 h-12'}
                     `}>
                         {item.type === 'folder' && <div className={`text-mai-primary ${isMobile ? 'text-xl' : 'text-2xl'}`}>📁</div>}
                         {item.type === 'file' && <div className={`text-mai-secondary ${isMobile ? 'text-xl' : 'text-2xl'}`}>📄</div>}
                     </div>
                     <span className={`
-                        font-medium text-mai-text text-center leading-tight drop-shadow-md 
-                        bg-mai-surface/40 backdrop-blur-md px-2 rounded-md border border-mai-border/10
+                        font-medium text-mai-text text-center leading-tight
+                        bg-mai-surface px-2 py-0.5 rounded-md border-2 border-mai-border
                         ${isMobile ? 'text-xs' : 'text-sm'}
                     `}>
                         {item.name}
@@ -80,14 +80,14 @@ export const DesktopIcons = () => {
             >
                 <div className={`
                     bg-gray-800 rounded-xl mb-2 flex items-center justify-center 
-                    shadow-sm group-hover:scale-105 transition-transform border border-mai-border/20
+                    group-hover:scale-105 transition-transform border-2 border-mai-border
                     ${isMobile ? 'w-10 h-10' : 'w-12 h-12'}
                 `}>
                     <span className={`text-white font-mono ${isMobile ? 'text-[10px]' : 'text-xs'}`}>{">_"}</span>
                 </div>
                 <span className={`
-                    font-medium text-mai-text text-center leading-tight drop-shadow-md 
-                    bg-mai-surface/40 backdrop-blur-md px-2 rounded-md border border-mai-border/10
+                    font-medium text-mai-text text-center leading-tight
+                    bg-mai-surface px-2 py-0.5 rounded-md border-2 border-mai-border
                     ${isMobile ? 'text-xs' : 'text-sm'}
                 `}>
                     Terminal
