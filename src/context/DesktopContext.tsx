@@ -111,6 +111,10 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
         setWindows(prev => [...prev, newWindow]);
         setActiveWindowId(newWindow.id);
         setMaxZIndex(prev => prev + 1);
+
+        // Push a state so that the back button logic has something to pop
+        // This ensures the back button doesn't exit the site but closes the window
+        window.history.pushState({ windowId: newWindow.id }, '');
     }, [focusWindow]);
 
     const closeWindow = React.useCallback((id: string) => {
@@ -145,6 +149,24 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
                 };
             }
         }));
+    }, []);
+
+    // History API Integration for Back Button Support
+    useEffect(() => {
+        const handlePopState = (event: PopStateEvent) => {
+            // Using stateRef to get current active window without dependency loop issues
+            const currentActiveId = stateRef.current.activeWindowId;
+
+            if (currentActiveId) {
+                // If a window is active and we hit back, minimize/close it
+                // We use minimizeWindow directly which uses setWindows
+                setWindows(prev => prev.map(w => w.id === currentActiveId ? { ...w, isMinimized: true } : w));
+                setActiveWindowId(null);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
     }, []);
 
     const updateWindowPosition = React.useCallback((id: string, position: { x: number; y: number }) => {
