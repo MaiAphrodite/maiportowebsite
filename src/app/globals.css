@@ -28,6 +28,15 @@
 
   /* Desktop Background Gradient */
   --desktop-bg: linear-gradient(135deg, #FDFDD0 0%, #FFD1DC 100%);
+
+  /* Boot Screen Variables (Light) */
+  --boot-title: #2D2D3A;
+  --boot-card-bg: rgba(255, 255, 255, 0.7);
+  --boot-dots: #FFB6C1;
+  --boot-hearts: #FFB6C1;
+  --boot-progress-bg: rgba(255, 255, 255, 0.6);
+  --boot-progress-fill: linear-gradient(90deg, #FF69B4 0%, #FFB6C1 100%);
+  --boot-footer: #9CA3AF;
 }
 
 [data-theme='dark'] {
@@ -48,6 +57,15 @@
   /* Neon Pink Border */
 
   --desktop-bg: linear-gradient(135deg, #1E1E2E 0%, #181825 100%);
+
+  /* Boot Screen Variables (Dark) */
+  --boot-title: #E0E0E0;
+  --boot-card-bg: rgba(30, 30, 46, 0.8);
+  --boot-dots: #FF69B4;
+  --boot-hearts: #FF69B4;
+  --boot-progress-bg: rgba(30, 30, 46, 0.8);
+  --boot-progress-fill: linear-gradient(90deg, #FF69B4 0%, #00FFFF 100%);
+  --boot-footer: #6B7280;
 }
 
 body {
@@ -145,6 +163,34 @@ body {
   .desktop-container {
     touch-action: manipulation;
   }
+}
+
+
+
+/* --- ANIMATIONS --- */
+@keyframes wordBounceIn {
+  0% {
+    transform: translateY(-5px) scale(0.9);
+    opacity: 0;
+  }
+
+  50% {
+    transform: translateY(2px) scale(1.05);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+
+
+
+
+.animate-word-bounce {
+  animation: wordBounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
 }
 
 /* Safe area insets for notched devices */

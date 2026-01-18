@@ -12,6 +12,37 @@ import { useDesktopActions, useDesktopState } from '@/context/DesktopContext';
 type MessagePart = { type: string; text?: string };
 type ChatMessage = { id: string; role: string; content?: string; parts?: MessagePart[] };
 
+const SubtitleWord = React.memo(({ word }: { word: string }) => (
+    <span
+        className="relative inline-block text-lg md:text-xl font-bold leading-relaxed px-[0.15em] -mx-[0.05em] animate-word-bounce"
+        style={{
+            fontFamily: 'var(--font-fredoka), var(--font-mplus), sans-serif',
+        }}
+    >
+        {/* Back layer - gradient stroke */}
+        <span
+            aria-hidden="true"
+            className="absolute inset-0 px-[0.15em]"
+            style={{
+                WebkitTextStroke: '6px #e879f9',
+                color: 'transparent',
+                left: 0,
+                right: 0
+            }}
+        >
+            {word}
+        </span>
+        {/* Front layer - white text with shadow */}
+        <span
+            className="relative text-white z-10"
+            style={{ textShadow: '0.5px 0.5px 0px rgba(0, 0, 0, 0.5)' }}
+        >
+            {word}
+        </span>
+    </span>
+));
+SubtitleWord.displayName = 'SubtitleWord';
+
 // Sub-component: Stream Feed (Handles High Frequency Typing Updates)
 const StreamFeed = React.memo(({
     latestAssistantMessage,
@@ -124,6 +155,7 @@ const StreamFeed = React.memo(({
     useEffect(() => { return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); }; }, []);
 
     const pagedSubtitle = getPagedSubtitle(displayedText);
+    const words = React.useMemo(() => pagedSubtitle ? pagedSubtitle.split(' ') : [], [pagedSubtitle]);
 
     return (
         <div className={`
@@ -161,53 +193,12 @@ const StreamFeed = React.memo(({
             </div>
 
             {/* Subtitles - Gradient stroke style with bounce */}
-            {pagedSubtitle && (
-                <>
-                    <style>{`
-                        @keyframes wordBounceIn {
-                            0% { transform: translateY(-5px) scale(0.9); opacity: 0; }
-                            50% { transform: translateY(2px) scale(1.05); opacity: 1; }
-                            100% { transform: translateY(0) scale(1); opacity: 1; }
-                        }
-                        @keyframes gradientFlow {
-                            0% { background-position: 0% 50%; }
-                            100% { background-position: 100% 50%; }
-                        }
-                    `}</style>
-                    <div className="absolute bottom-12 md:bottom-16 left-1/2 -translate-x-1/2 w-full max-w-[90%] md:max-w-[70%] z-20 flex flex-wrap justify-center gap-x-1.5 gap-y-1">
-                        {pagedSubtitle.split(' ').map((word, i) => (
-                            <span
-                                key={`${i}-${word}`}
-                                className="relative inline-block text-lg md:text-xl font-bold leading-relaxed px-[0.15em] -mx-[0.05em]"
-                                style={{
-                                    fontFamily: 'var(--font-fredoka), var(--font-mplus), sans-serif',
-                                    animation: 'wordBounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards'
-                                }}
-                            >
-                                {/* Back layer - gradient stroke */}
-                                <span
-                                    aria-hidden="true"
-                                    className="absolute inset-0 px-[0.15em]" // Match parent padding
-                                    style={{
-                                        WebkitTextStroke: '6px #e879f9', // Soft magenta
-                                        color: 'transparent', // Needed just for the stroke layer to not show fill
-                                        left: 0,
-                                        right: 0
-                                    }}
-                                >
-                                    {word}
-                                </span>
-                                {/* Front layer - white text with shadow */}
-                                <span
-                                    className="relative text-white z-10"
-                                    style={{ textShadow: '0.5px 0.5px 0px rgba(0, 0, 0, 0.5)' }}
-                                >
-                                    {word}
-                                </span>
-                            </span>
-                        ))}
-                    </div>
-                </>
+            {words.length > 0 && (
+                <div className="absolute bottom-12 md:bottom-16 left-1/2 -translate-x-1/2 w-full max-w-[90%] md:max-w-[70%] z-20 flex flex-wrap justify-center gap-x-1.5 gap-y-1">
+                    {words.map((word, i) => (
+                        <SubtitleWord key={`${i}-${word}`} word={word} />
+                    ))}
+                </div>
             )}
         </div>
     );
