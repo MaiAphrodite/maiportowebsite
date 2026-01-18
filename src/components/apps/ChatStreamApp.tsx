@@ -127,8 +127,8 @@ const StreamFeed = React.memo(({
 
     return (
         <div className={`
-            relative bg-black flex flex-col justify-center items-center overflow-hidden group
-            ${isCompact ? 'w-full aspect-video shrink-0' : 'flex-1 min-w-0'}
+            relative bg-black flex flex-col justify-center items-center overflow-hidden group aspect-video
+            ${isCompact ? 'w-full shrink-0' : 'flex-1 min-w-0 max-h-full'}
         `}>
             {/* Overlay UI */}
             <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md z-10 flex items-center gap-1">
@@ -143,7 +143,7 @@ const StreamFeed = React.memo(({
             <div className="relative w-full h-full flex items-center justify-center bg-black">
                 <div className="relative w-full h-full">
                     <Image
-                        src="/assets/ai-character.png"
+                        src="/assets/streamsimple.png"
                         alt="Mai Live"
                         fill
                         className="object-contain"
@@ -163,12 +163,15 @@ const StreamFeed = React.memo(({
             {/* Subtitles */}
             {pagedSubtitle && (
                 <div className="absolute bottom-16 md:bottom-24 left-1/2 -translate-x-1/2 w-full max-w-[90%] md:max-w-[70%] z-20 flex justify-center">
-                    <span className="
-                        inline-block
-                        bg-black/60 backdrop-blur-sm text-yellow-300 px-4 py-2 rounded-lg 
-                        text-lg md:text-xl font-medium shadow-lg leading-relaxed border border-white/10
-                        text-center min-h-[3.5rem] flex items-center justify-center transition-all duration-300
-                    ">
+                    <span
+                        className="
+                            inline-block
+                            bg-black/60 backdrop-blur-sm text-yellow-300 px-4 py-2 rounded-lg 
+                            text-lg md:text-xl font-medium shadow-lg leading-relaxed border border-white/10
+                            text-center min-h-[3.5rem] flex items-center justify-center transition-all duration-300
+                        "
+                        style={{ fontFamily: 'var(--font-fredoka), sans-serif' }}
+                    >
                         {pagedSubtitle}
                     </span>
                 </div>
@@ -219,7 +222,7 @@ const ChatSidebar = React.memo(({
 
     return (
         <div className={`
-            bg-[#181818] border-gray-700 flex flex-col 
+            bg-[#181818] border-gray-700 flex flex-col overflow-hidden
             ${isCompact
                 ? 'flex-1 w-full border-t min-h-0'
                 : 'w-[350px] flex-none border-l min-h-0'
@@ -265,14 +268,14 @@ const ChatSidebar = React.memo(({
             </div>
 
             {/* Chat Input */}
-            <div className="p-3 bg-[#181818] border-t border-gray-700 relative">
-                <form onSubmit={handleSubmit} className="flex gap-2">
+            <div className="px-6 pb-6 pt-3 bg-[#181818] border-t border-gray-700 relative">
+                <form onSubmit={handleSubmit} className="flex gap-2 min-w-0">
                     <input
                         type="text"
                         value={input}
                         onChange={handleInputChange}
                         placeholder={token ? "Say something..." : "Verifying..."}
-                        className="flex-1 bg-[#0f0f0f] text-white rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-mai-primary border border-gray-700 disabled:opacity-50"
+                        className="flex-1 min-w-0 bg-[#0f0f0f] text-white rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-mai-primary border border-gray-700 disabled:opacity-50"
                         disabled={!token}
                     />
                     <button

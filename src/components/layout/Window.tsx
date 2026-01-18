@@ -89,7 +89,7 @@ export const Window = React.memo(({ windowState, children }: WindowProps) => {
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.95, opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className={`w-full h-full bg-mai-border flex flex-col pt-1 ${isMaximized ? 'rounded-none' : 'rounded-3xl'}`}
+                    className={`w-full h-full bg-mai-border flex flex-col pt-1 border-2 border-black/30 ${isMaximized ? 'rounded-none' : 'rounded-3xl'}`}
                     style={{ boxShadow: isMaximized ? 'none' : '8px 8px 0px rgba(0,0,0,0.5)' }}
                 >
                     <WindowHeader
@@ -103,7 +103,7 @@ export const Window = React.memo(({ windowState, children }: WindowProps) => {
 
                     {/* Window Content */}
                     <div
-                        className={`flex-1 overflow-hidden bg-mai-surface backdrop-blur-sm relative text-mai-text ${isMaximized ? 'rounded-none' : 'rounded-t-3xl rounded-b-2xl mx-1 mb-1'}`}
+                        className={`flex-1 overflow-hidden bg-mai-surface backdrop-blur-sm relative text-mai-text ${isMaximized ? 'rounded-none' : 'rounded-t-3xl rounded-b-2xl mx-3 mb-3'}`}
                         onClick={() => focusWindow(id)}
                     >
                         {children}
