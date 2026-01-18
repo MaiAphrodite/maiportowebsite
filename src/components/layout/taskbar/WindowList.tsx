@@ -15,15 +15,15 @@ export const WindowList = () => {
     };
 
     return (
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar max-w-full">
             {windows.map((win) => (
                 <button
                     key={win.id}
                     onClick={() => handleTaskbarItemClick(win.id, win.isMinimized)}
                     className={`
-                        px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2
+                        px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap min-w-fit
                         ${activeWindowId === win.id && !win.isMinimized
-                            ? 'bg-mai-surface-dim text-mai-text shadow-sm translate-y-[-2px] border border-mai-border'
+                            ? 'bg-mai-surface-dim text-mai-text shadow-sm border border-mai-border'
                             : 'bg-transparent text-mai-subtext hover:bg-mai-surface-dim'}
                     `}
                 >

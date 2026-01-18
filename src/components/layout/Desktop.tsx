@@ -8,7 +8,7 @@ import { DesktopIcons } from './DesktopIcons';
 import { Window } from './Window';
 import { MobileHome } from '../mobile/MobileHome';
 import { MobileStatusBar } from '../mobile/MobileStatusBar';
-import { MobileNavBar } from '../mobile/MobileNavBar';
+
 import { ChatbotWidget } from '@/components/widgets/ChatbotWidget';
 import { AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
@@ -100,10 +100,7 @@ export const Desktop = () => {
 
             {/* Taskbar / Nav Layer */}
             {isMobile ? (
-                <>
-                    <MobileStatusBar />
-                    <MobileNavBar />
-                </>
+                <MobileStatusBar />
             ) : (
                 <Taskbar />
             )}
