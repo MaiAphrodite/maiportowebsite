@@ -127,20 +127,20 @@ const StreamFeed = React.memo(({
 
     return (
         <div className={`
-            relative bg-black flex flex-col justify-center items-center overflow-hidden group aspect-video
-            ${isCompact ? 'w-full shrink-0' : 'flex-1 min-w-0 max-h-full'}
+            relative bg-mai-surface-dim flex flex-col justify-center items-center overflow-hidden group aspect-video rounded-xl border-2 border-mai-border
+            ${isCompact ? 'w-full shrink-0 mx-3 mt-3' : 'flex-1 min-w-0 max-h-full m-3'}
         `}>
-            {/* Overlay UI */}
-            <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md z-10 flex items-center gap-1">
+            {/* Overlay UI - Cute Live Badge */}
+            <div className="absolute top-3 left-3 bg-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-full z-10 flex items-center gap-1.5">
                 <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                 LIVE
             </div>
-            <div className="absolute top-4 right-4 bg-black/50 backdrop-blur text-white text-xs font-bold px-2 py-1 rounded-md z-10 flex items-center gap-1">
-                <span className="text-red-500">●</span> 1.2k watching
+            <div className="absolute top-3 right-3 bg-mai-surface text-mai-text text-xs font-medium px-3 py-1.5 rounded-full z-10 flex items-center gap-1.5 border-2 border-mai-border">
+                <span className="text-pink-500">♡</span> 1.2k watching
             </div>
 
             {/* Video Content */}
-            <div className="relative w-full h-full flex items-center justify-center bg-black">
+            <div className="relative w-full h-full flex items-center justify-center">
                 <div className="relative w-full h-full">
                     <Image
                         src="/assets/streamsimple.png"
@@ -152,25 +152,25 @@ const StreamFeed = React.memo(({
                 </div>
             </div>
 
-            {/* Hover Controls */}
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center px-4 gap-4">
-                <button className="text-white"><Maximize2 size={18} /></button>
-                <div className="flex-1 h-1 bg-gray-600 rounded-full overflow-hidden">
-                    <div className="w-full h-full bg-red-600" />
+            {/* Hover Controls - Soft style */}
+            <div className="absolute bottom-0 left-0 right-0 h-12 bg-mai-surface/95 opacity-0 group-hover:opacity-100 transition-opacity flex items-center px-4 gap-4 rounded-b-xl">
+                <button className="text-mai-text hover:text-mai-primary transition-colors"><Maximize2 size={18} /></button>
+                <div className="flex-1 h-1.5 bg-mai-surface-dim rounded-full overflow-hidden">
+                    <div className="w-full h-full bg-pink-400 rounded-full" />
                 </div>
             </div>
 
-            {/* Subtitles */}
+            {/* Subtitles - Cute bubble style */}
             {pagedSubtitle && (
-                <div className="absolute bottom-16 md:bottom-24 left-1/2 -translate-x-1/2 w-full max-w-[90%] md:max-w-[70%] z-20 flex justify-center">
+                <div className="absolute bottom-12 md:bottom-16 left-1/2 -translate-x-1/2 w-full max-w-[90%] md:max-w-[70%] z-20 flex justify-center">
                     <span
                         className="
                             inline-block
-                            bg-black/60 backdrop-blur-sm text-yellow-300 px-4 py-2 rounded-lg 
-                            text-lg md:text-xl font-medium shadow-lg leading-relaxed border border-white/10
-                            text-center min-h-[3.5rem] flex items-center justify-center transition-all duration-300
+                            bg-mai-surface text-mai-text px-4 py-2 rounded-xl 
+                            text-sm md:text-base font-medium leading-relaxed border-2 border-mai-border
+                            text-center
                         "
-                        style={{ fontFamily: 'var(--font-fredoka), sans-serif' }}
+                        style={{ fontFamily: 'var(--font-fredoka), var(--font-mplus), sans-serif' }}
                     >
                         {pagedSubtitle}
                     </span>
@@ -222,37 +222,42 @@ const ChatSidebar = React.memo(({
 
     return (
         <div className={`
-            bg-[#181818] border-gray-700 flex flex-col overflow-hidden
+            bg-mai-surface flex flex-col overflow-hidden border-2 border-mai-border rounded-xl
             ${isCompact
-                ? 'flex-1 w-full border-t min-h-0'
-                : 'w-[350px] flex-none border-l min-h-0'
+                ? 'flex-1 w-full min-h-0 mx-3 mb-3'
+                : 'w-[300px] flex-none min-h-0 my-3 mr-3'
             }
         `}>
-            <div className="p-3 border-b border-gray-700 flex justify-between items-center bg-[#181818]">
-                <span className="text-white font-medium">Top Chat</span>
-                <MoreHorizontal size={16} className="text-gray-400" />
+            {/* Header */}
+            <div className="p-3 border-b-2 border-mai-border flex justify-between items-center">
+                <span className="text-mai-text font-semibold flex items-center gap-2">
+                    💬 Chat
+                </span>
+                <MoreHorizontal size={16} className="text-mai-subtext" />
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
-                <div className="flex gap-2 items-start opacity-70">
-                    <div className="w-6 h-6 rounded-full bg-mai-primary flex-shrink-0 flex items-center justify-center text-[10px] text-white font-bold">SYS</div>
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {/* System welcome */}
+                <div className="flex gap-2 items-start opacity-80">
+                    <div className="w-6 h-6 rounded-full bg-pink-400 flex-shrink-0 flex items-center justify-center text-[10px] text-white font-bold">✦</div>
                     <div className="flex-1 min-w-0">
-                        <span className="text-gray-400 text-xs font-semibold mr-2">System</span>
-                        <span className="text-gray-300 text-sm">Welcome to the stream! say hello to Mai!</span>
+                        <span className="text-mai-primary text-xs font-semibold mr-2">System</span>
+                        <span className="text-mai-subtext text-sm">Welcome! Say hello to Mai~ ♡</span>
                     </div>
                 </div>
 
                 {userMessages.map((msg: ChatMessage, index: number) => (
-                    <div key={msg.id} className="flex gap-2 items-start animate-in slide-in-from-left-2 duration-300">
-                        <div className="w-6 h-6 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-[10px] text-white font-bold">YOU</div>
+                    <div key={msg.id} className="flex gap-2 items-start">
+                        <div className="w-6 h-6 rounded-full bg-blue-400 flex-shrink-0 flex items-center justify-center text-[9px] text-white font-bold">You</div>
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                                <span className="text-gray-400 text-xs font-semibold">You</span>
+                                <span className="text-mai-secondary text-xs font-semibold">You</span>
                                 {status === 'submitted' && index === userMessages.length - 1 && (
-                                    <RotateCw size={12} className="text-gray-500 animate-spin" />
+                                    <RotateCw size={12} className="text-mai-subtext animate-spin" />
                                 )}
                             </div>
-                            <span className={`text-sm break-words leading-tight ${isLoading && index === userMessages.length - 1 ? 'text-gray-400' : 'text-white'}`}>
+                            <span className={`text-sm break-words leading-relaxed ${isLoading && index === userMessages.length - 1 ? 'text-mai-subtext' : 'text-mai-text'}`}>
                                 {getMessageContent(msg)}
                             </span>
                         </div>
@@ -268,28 +273,28 @@ const ChatSidebar = React.memo(({
             </div>
 
             {/* Chat Input */}
-            <div className="px-6 pb-6 pt-3 bg-[#181818] border-t border-gray-700 relative">
+            <div className="px-3 pb-3 pt-2 border-t-2 border-mai-border relative">
                 <form onSubmit={handleSubmit} className="flex gap-2 min-w-0">
                     <input
                         type="text"
                         value={input}
                         onChange={handleInputChange}
-                        placeholder={token ? "Say something..." : "Verifying..."}
-                        className="flex-1 min-w-0 bg-[#0f0f0f] text-white rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-mai-primary border border-gray-700 disabled:opacity-50"
+                        placeholder={token ? "Say something cute~" : "Verifying..."}
+                        className="flex-1 min-w-0 bg-mai-surface-dim text-mai-text rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-mai-primary border-2 border-mai-border disabled:opacity-50 placeholder:text-mai-subtext transition-all"
                         disabled={!token}
                     />
                     <button
                         type="submit"
                         disabled={isLoading || !input.trim() || !token}
-                        className="p-2 bg-mai-primary text-white rounded-full hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        className="p-2 bg-pink-400 text-white rounded-full hover:bg-pink-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         <Send size={16} />
                     </button>
-                    <div className="flex items-center gap-1 text-gray-400">
-                        <Heart size={20} className="hover:text-red-500 cursor-pointer transition-colors" />
-                    </div>
+                    <button type="button" className="p-2.5 text-mai-subtext hover:text-pink-500 transition-colors">
+                        <Heart size={18} />
+                    </button>
                 </form>
-                {/* Turnstile (Visible for interaction if needed) */}
+                {/* Turnstile */}
                 {!token && (
                     <div className="absolute bottom-full left-0 right-0 flex justify-center pb-2 pointer-events-auto">
                         <Turnstile
@@ -297,7 +302,7 @@ const ChatSidebar = React.memo(({
                             onSuccess={setToken}
                             onError={() => setToken(null)}
                             onExpire={() => setToken(null)}
-                            options={{ theme: 'dark', size: 'flexible' }}
+                            options={{ theme: 'light', size: 'flexible' }}
                         />
                     </div>
                 )}
@@ -363,7 +368,7 @@ export const ChatStreamApp = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [isCompact, setIsCompact] = useState(false);
     const { updateWindowSize } = useDesktopActions();
-    const { windows } = useDesktopState(); // We need state here to check if we are the chat window, but we are inside the chat window component, so it's unavoidable.
+    const { windows } = useDesktopState();
     const chatWindow = windows.find(w => w.id === 'chat-stream');
 
     useEffect(() => {
@@ -390,18 +395,21 @@ export const ChatStreamApp = () => {
     }, [chatWindow, updateWindowSize]);
 
     return (
-        <div ref={containerRef} className="flex flex-col h-full w-full bg-[#0f0f0f] text-white overflow-hidden">
-            {/* Header */}
-            <div className="bg-[#202020] px-4 py-2 flex items-center justify-between border-b border-gray-700 shrink-0">
+        <div ref={containerRef} className="flex flex-col h-full w-full bg-mai-surface-dim text-mai-text overflow-hidden">
+            {/* Header - Cute browser-like */}
+            <div className="bg-mai-surface px-4 py-2.5 flex items-center justify-between border-b-2 border-mai-border shrink-0">
                 <div className="flex items-center gap-4 flex-1">
-                    <div className="flex gap-1.5 opacity-50">
-                        <div className="w-3 h-3 rounded-full bg-gray-600" />
-                        <div className="w-3 h-3 rounded-full bg-gray-600" />
-                        <div className="w-3 h-3 rounded-full bg-gray-600" />
+                    {/* Decorative dots */}
+                    <div className="flex gap-1.5">
+                        <div className="w-3 h-3 rounded-full bg-pink-400" />
+                        <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                        <div className="w-3 h-3 rounded-full bg-green-400" />
                     </div>
-                    <div className="flex-1 max-w-xl mx-4 bg-[#121212] rounded-full px-4 py-1.5 text-xs text-gray-400 flex items-center gap-2 border border-gray-700/50">
-                        <span className="text-gray-500">🔒</span>
-                        <span className="text-white">mai.stream/live</span>
+                    {/* URL bar */}
+                    <div className="flex-1 max-w-xl mx-4 bg-mai-surface-dim rounded-full px-4 py-1.5 text-xs text-mai-subtext flex items-center gap-2 border-2 border-mai-border">
+                        <span className="text-pink-500">♡</span>
+                        <span className="text-mai-text font-medium">mai.stream/live</span>
+                        <span className="ml-auto text-[10px] bg-gradient-to-r from-pink-400 to-rose-400 text-white px-2 py-0.5 rounded-full">LIVE</span>
                     </div>
                 </div>
             </div>

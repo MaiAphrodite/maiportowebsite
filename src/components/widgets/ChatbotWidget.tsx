@@ -34,8 +34,8 @@ export const ChatbotWidget = () => {
                 {/* Thumbnail */}
                 <div className="relative w-16 h-10 shrink-0">
                     <Image
-                        src="/assets/ai-character.png" // Using the character as the 'thumbnail'
-                        alt="Stream Thumbnail"
+                        src="/assets/maiveclogo.png"
+                        alt="Mai Logo"
                         fill
                         className="object-contain bg-black rounded"
                     />
