@@ -145,45 +145,128 @@ export const ChatbotWidget = () => {
 
     const currentFullText = getMessageContent(latestAssistantMessage);
 
-    // Typewriter effect: Slowly reveal text WORD BY WORD
+    // Refs to track state avoiding closure staleness in timeouts
+    const fullTextRef = useRef(currentFullText);
+    const displayedTextRef = useRef(displayedText);
+    const isTypingRef = useRef(false);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Sync refs
+    useEffect(() => {
+        fullTextRef.current = currentFullText;
+    }, [currentFullText]);
+
+    useEffect(() => {
+        displayedTextRef.current = displayedText;
+    }, [displayedText]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+    }, []);
+
+    // Main typing logic
+    const advanceTyping = () => {
+        // If already typing, don't overlap
+        if (isTypingRef.current) return;
+
+        const fullWords = fullTextRef.current.split(' ');
+        const displayedWords = displayedTextRef.current ? displayedTextRef.current.split(' ') : [];
+
+        // If caught up, stop
+        if (displayedWords.length >= fullWords.length && displayedTextRef.current === fullTextRef.current) {
+            isTypingRef.current = false;
+            return;
+        }
+
+        isTypingRef.current = true;
+
+        // Determine the next word
+        const nextWordIndex = displayedWords.length;
+        const nextWord = fullWords[nextWordIndex] || '';
+
+        // Calculate delay
+        // Base delay (70ms) + (25ms per character)
+        const delay = 70 + (nextWord.length * 25);
+
+        timeoutRef.current = setTimeout(() => {
+            const nextWordCount = displayedWords.length + 1;
+            const newText = fullWords.slice(0, nextWordCount).join(' ');
+
+            setDisplayedText(newText);
+
+            // Play sound effect
+            playDialogueSound(nextWord);
+
+            isTypingRef.current = false;
+        }, delay);
+    };
+
+    // Watch for resets (new message)
     useEffect(() => {
         if (!latestAssistantMessage) {
             setDisplayedText('');
             return;
         }
-
-        // Processing a new message? Reset.
         if (latestAssistantMessage.id !== lastProcessedId) {
             setDisplayedText('');
             setLastProcessedId(latestAssistantMessage.id);
-            return;
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            isTypingRef.current = false;
         }
+    }, [latestAssistantMessage, lastProcessedId]);
 
-        const fullWords = currentFullText.split(' ');
-        const displayedWords = displayedText ? displayedText.split(' ') : [];
+    // Trigger typing when displayed text updates (continue loop)
+    useEffect(() => {
+        advanceTyping();
+    }, [displayedText]);
 
-        // If we are caught up, do nothing
-        if (displayedWords.length >= fullWords.length && displayedText === currentFullText) {
-            return;
+    // Trigger typing when full text updates (getting new stream data)
+    // Only if not already typing (advanceTyping checks strict guard)
+    useEffect(() => {
+        advanceTyping();
+    }, [currentFullText]);
+
+    const playDialogueSound = (word: string) => {
+        try {
+            // Categories based on user request:
+            // Mid tone: 001-010 (Default)
+            // Low tone: 011-020 (End of sentences, heavy words)
+            // High tone: 021-030 (Questions, exclamations)
+
+            let min = 1;
+            let max = 10;
+
+            if (/[?!]/.test(word)) {
+                // High tone for questions/exclamations
+                min = 21;
+                max = 30;
+            } else if (/[.]/.test(word) || word.length > 8) {
+                // Low tone for periods or long words
+                min = 11;
+                max = 20;
+            } else {
+                // Mid tone for everything else
+                min = 1;
+                max = 10;
+            }
+
+            // Pick random sound from category
+            const fileIndex = Math.floor(Math.random() * (max - min + 1)) + min;
+            // Assuming file naming: bleep001.ogg, bleep002.ogg, etc.
+            const fileName = `bleep${String(fileIndex).padStart(3, '0')}.ogg`;
+
+            const audio = new Audio(`/sounds/dialogue/${fileName}`);
+            audio.volume = 0.7; // Increased volume as per user request
+            audio.play().catch(() => {
+                // Ignore play errors (e.g. missing files, user interaction policy)
+            });
+        } catch (e) {
+            // Safety catch
         }
-
-        // Determine the next word to show to calculate delay
-        const nextWordIndex = displayedWords.length;
-        const nextWord = fullWords[nextWordIndex] || '';
-
-        // Calculate delay based on word complexity
-        // Base delay (100ms) + (30ms per character)
-        // Short word "a" (1) = 130ms
-        // Long word "complexity" (10) = 400ms
-        const delay = 100 + (nextWord.length * 30);
-
-        const timeoutId = setTimeout(() => {
-            const nextWordCount = displayedWords.length + 1;
-            setDisplayedText(fullWords.slice(0, nextWordCount).join(' '));
-        }, delay);
-
-        return () => clearTimeout(timeoutId);
-    }, [currentFullText, displayedText, latestAssistantMessage, lastProcessedId]);
+    };
 
     const pagedSubtitle = getPagedSubtitle(displayedText);
 
@@ -321,8 +404,8 @@ export const ChatbotWidget = () => {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-gray-400 text-xs font-semibold">You</span>
-                                                {/* Show spinner on the latest message if loading */}
-                                                {isLoading && index === userMessages.length - 1 && (
+                                                {/* Show spinner ONLY when processing (submitted but not yet streaming) */}
+                                                {status === 'submitted' && index === userMessages.length - 1 && (
                                                     <RotateCw size={12} className="text-gray-500 animate-spin" />
                                                 )}
                                             </div>
