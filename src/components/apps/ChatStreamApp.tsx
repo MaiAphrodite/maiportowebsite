@@ -73,7 +73,8 @@ const StreamFeed = React.memo(({
             const audio = new Audio(`/sounds/dialogue/${fileName}`);
             audio.volume = 0.7;
             audio.play().catch(() => { });
-        } catch (_) { }
+        } catch (_) { // eslint-disable-line @typescript-eslint/no-unused-vars
+        }
     };
 
     // Typing Logic
@@ -127,7 +128,7 @@ const StreamFeed = React.memo(({
     return (
         <div className={`
             relative bg-black flex flex-col justify-center items-center overflow-hidden group
-            ${isCompact ? 'w-full aspect-video shrink-0' : 'flex-[3] min-w-[320px] h-full'}
+            ${isCompact ? 'w-full aspect-video shrink-0' : 'flex-[3] min-w-[320px] min-h-0'}
         `}>
             {/* Overlay UI */}
             <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md z-10 flex items-center gap-1">
@@ -221,7 +222,7 @@ const ChatSidebar = React.memo(({
             bg-[#181818] border-gray-700 flex flex-col 
             ${isCompact
                 ? 'flex-1 w-full border-t min-h-0'
-                : 'flex-1 min-w-[300px] md:max-w-[350px] h-full border-l'
+                : 'flex-1 min-w-[300px] md:max-w-[350px] border-l min-h-0'
             }
         `}>
             <div className="p-3 border-b border-gray-700 flex justify-between items-center bg-[#181818]">
@@ -270,12 +271,13 @@ const ChatSidebar = React.memo(({
                         type="text"
                         value={input}
                         onChange={handleInputChange}
-                        placeholder="Say something..."
-                        className="flex-1 bg-[#0f0f0f] text-white rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-mai-primary border border-gray-700"
+                        placeholder={token ? "Say something..." : "Verifying..."}
+                        className="flex-1 bg-[#0f0f0f] text-white rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-mai-primary border border-gray-700 disabled:opacity-50"
+                        disabled={!token}
                     />
                     <button
                         type="submit"
-                        disabled={isLoading || !input.trim()}
+                        disabled={isLoading || !input.trim() || !token}
                         className="p-2 bg-mai-primary text-white rounded-full hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
                         <Send size={16} />
@@ -314,6 +316,7 @@ export const ChatStreamApp = () => {
         }
     }, []);
 
+    // eslint-disable-next-line react-hooks/refs
     const transport = React.useMemo(() => new TextStreamChatTransport({
         api: '/api/chat',
         prepareSendMessagesRequest: async ({ messages: msgs, ...rest }) => {
