@@ -103,7 +103,7 @@ export const Window = React.memo(({ windowState, children }: WindowProps) => {
 
                     {/* Window Content */}
                     <div
-                        className={`flex-1 overflow-auto bg-mai-surface backdrop-blur-sm relative text-mai-text ${isMaximized ? 'rounded-none' : 'rounded-t-3xl rounded-b-2xl mx-3 mb-3'}`}
+                        className={`flex-1 overflow-hidden bg-mai-surface backdrop-blur-sm relative text-mai-text ${isMaximized ? 'rounded-none' : 'rounded-t-3xl rounded-b-2xl mx-3 mb-3'}`}
                         onClick={() => focusWindow(id)}
                     >
                         {children}
