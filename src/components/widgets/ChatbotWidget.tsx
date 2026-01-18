@@ -76,6 +76,10 @@ export const ChatbotWidget = () => {
         },
         onError: (err: Error) => {
             console.error("Chat error:", err.message);
+            // If session expired or unauthorized, force re-verification
+            if (err.message.includes('401') || err.message.toLowerCase().includes('unauthorized')) {
+                setToken(null);
+            }
         }
     } as Parameters<typeof useChat>[0]);
 
@@ -91,12 +95,7 @@ export const ChatbotWidget = () => {
         try {
             await sendMessage({ text: input });
             setInput('');
-
-            // Clear token to force re-verification for next message
-            // (Unless we are in dev bypass mode)
-            if (token !== 'dev-bypass') {
-                setToken(null);
-            }
+            // Token is now persisted for session duration
         } catch (error) {
             console.error("Start stream error:", error);
         }
@@ -177,32 +176,34 @@ export const ChatbotWidget = () => {
                     </div>
 
                     {/* Input */}
-                    <div className="p-2 md:p-3 bg-mai-surface-dim border-t border-mai-border/20">
-                        {!token ? (
-                            <div className="flex justify-center py-2 min-h-[50px] items-center">
-                                <Turnstile
-                                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
-                                    onSuccess={(token) => setToken(token)}
-                                    options={{ theme: 'light', size: 'flexible' }}
-                                />
+                    <div className="relative p-2 md:p-3 bg-mai-surface-dim border-t border-mai-border/20">
+                        <form onSubmit={handleSubmit} className={`flex gap-2 transition-opacity duration-200 ${!token ? 'opacity-50' : 'opacity-100'}`}>
+                            <input
+                                value={input || ''}
+                                onChange={handleInputChange}
+                                placeholder="Type a message..."
+                                disabled={isLoading || !token}
+                                className="w-full px-3 py-2 rounded-full border border-mai-border/30 bg-mai-surface text-mai-text text-sm focus:outline-none focus:border-mai-primary disabled:opacity-50"
+                            />
+                            <button
+                                type="submit"
+                                disabled={isLoading || !(input || '').trim() || !token}
+                                className="p-2 bg-mai-primary text-white rounded-full hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <Send size={16} />
+                            </button>
+                        </form>
+
+                        {!token && (
+                            <div className="absolute inset-0 flex justify-center items-center bg-mai-surface-dim/50 backdrop-blur-[1px] z-10">
+                                <div className="transform scale-90 origin-bottom">
+                                    <Turnstile
+                                        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                                        onSuccess={(token) => setToken(token)}
+                                        options={{ theme: 'light', size: 'compact' }}
+                                    />
+                                </div>
                             </div>
-                        ) : (
-                            <form onSubmit={handleSubmit} className="flex gap-2">
-                                <input
-                                    value={input || ''}
-                                    onChange={handleInputChange}
-                                    placeholder="Type a message..."
-                                    disabled={isLoading}
-                                    className="w-full px-3 py-2 rounded-full border border-mai-border/30 bg-mai-surface text-mai-text text-sm focus:outline-none focus:border-mai-primary disabled:opacity-50"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={isLoading || !(input || '').trim()}
-                                    className="p-2 bg-mai-primary text-white rounded-full hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <Send size={16} />
-                                </button>
-                            </form>
                         )}
                     </div>
                 </div>

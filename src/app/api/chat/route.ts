@@ -2,6 +2,9 @@ import { streamText } from 'ai';
 import { maiCharacter } from '@/data/characters';
 import { knowledgeBase } from '@/data/knowledge';
 import { getChatModel } from '@/lib/ai';
+import { cookies } from 'next/headers';
+import { signSession, verifySession } from '@/lib/session';
+import { randomUUID } from 'crypto';
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -12,19 +15,35 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { messages, token } = body;
 
-    // 0. Verify Turnstile Token
+    // 0. Verify Session or Turnstile Token
     console.log("[API] Processing chat request");
 
-    if (!token && process.env.NODE_ENV === 'production' && process.env.TURNSTILE_SECRET_KEY) {
-        console.error("[API] Missing Turnstile token in production");
-        return new Response('Missing Turnstile token', { status: 401 });
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get('chat-session')?.value;
+    let isVerified = false;
+
+    // Check for existing valid session
+    if (sessionToken) {
+        const sessionId = verifySession(sessionToken);
+        if (sessionId) {
+            console.log(`[API] Valid session found: ${sessionId.slice(0, 8)}...`);
+            isVerified = true;
+        } else {
+            console.warn("[API] Invalid or expired session cookie");
+        }
     }
 
-    if (token) {
-        // Skip verification for dev bypass
+    // If not verified by session, check Turnstile
+    if (!isVerified) {
+        if (!token && process.env.NODE_ENV === 'production' && process.env.TURNSTILE_SECRET_KEY) {
+            console.error("[API] Missing Turnstile token in production");
+            return new Response('Missing Turnstile token', { status: 401 });
+        }
+
         if (token === 'dev-bypass') {
             console.log("[API] Dev bypass used");
-        } else {
+            isVerified = true;
+        } else if (token) {
             const secretKey = process.env.TURNSTILE_SECRET_KEY;
             if (secretKey) {
                 console.log("[API] Verifying Turnstile token...");
@@ -45,10 +64,32 @@ export async function POST(req: Request) {
                     console.error("[API] Turnstile verification failed:", JSON.stringify(outcome));
                     return new Response('Invalid Turnstile token', { status: 401 });
                 }
+
+                isVerified = true;
+
+                // Create and set new session
+                const newSessionId = randomUUID();
+                const newSessionToken = signSession(newSessionId);
+
+                // Set cookie for 7 days
+                cookieStore.set('chat-session', newSessionToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'strict',
+                    path: '/',
+                    maxAge: 60 * 60 * 24 * 7
+                });
+                console.log(`[API] New session created: ${newSessionId.slice(0, 8)}...`);
             } else {
                 console.warn("[API] Token provided but TURNSTILE_SECRET_KEY is missing");
+                // Allow if secret key is missing (dev/misconfig) but warn
+                isVerified = true;
             }
         }
+    }
+
+    if (!isVerified) {
+        return new Response('Unauthorized', { status: 401 });
     }
 
     // 1. Get the last user message to perform "RAG"
