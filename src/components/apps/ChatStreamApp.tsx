@@ -160,7 +160,7 @@ const StreamFeed = React.memo(({
     return (
         <div className={`
             relative bg-mai-surface-dim flex flex-col justify-center items-center overflow-hidden group aspect-video rounded-xl border-2 border-mai-border
-            ${isCompact ? 'w-full shrink-0 mx-3 mt-3' : 'flex-1 min-w-0 max-h-full m-3'}
+            ${isCompact ? 'shrink-0 mx-3 mt-3' : 'flex-1 min-w-0 max-h-full m-3'}
         `}>
             {/* Overlay UI - Cute Live Badge */}
             <div className="absolute top-3 left-3 bg-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-full z-10 flex items-center gap-1.5">
@@ -248,7 +248,7 @@ const ChatSidebar = React.memo(({
         <div className={`
             bg-mai-surface flex flex-col overflow-hidden border-2 border-mai-border rounded-xl
             ${isCompact
-                ? 'flex-1 w-full min-h-0 mx-3 mb-3'
+                ? 'flex-1 min-h-0 mx-3 mb-3'
                 : 'w-[300px] flex-none min-h-0 my-3 mr-3'
             }
         `}>
@@ -356,6 +356,7 @@ export const ChatStreamApp = () => {
         api: '/api/chat',
         prepareSendMessagesRequest: async ({ messages: msgs, ...rest }) => {
             const currentToken = tokenRef.current;
+            console.log("Sending message with token:", currentToken ? currentToken.slice(0, 10) + "..." : "null");
             const transformedMessages = msgs.map((msg: ChatMessage) => {
                 let content = msg.content;
                 if (!content && msg.parts) {
