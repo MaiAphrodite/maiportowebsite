@@ -1,12 +1,12 @@
 "use client";
 
 import React from 'react';
-import { useDesktop, type WindowContent } from '@/context/DesktopContext';
+import { useDesktopActions, type WindowContent } from '@/context/DesktopContext';
 import { fileSystem, FileSystemItem } from '@/data/fileSystem';
 import { useMobile } from '@/hooks/useMobile';
 
 export const DesktopIcons = () => {
-    const { openWindow } = useDesktop();
+    const { openWindow } = useDesktopActions();
     const isMobile = useMobile();
 
     const handleIconClick = (item: FileSystemItem) => {

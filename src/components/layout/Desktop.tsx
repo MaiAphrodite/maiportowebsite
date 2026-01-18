@@ -20,10 +20,16 @@ const FileExplorer = dynamic(() => import('@/components/apps/FileExplorer').then
     ssr: false
 });
 
+const ChatStreamApp = dynamic(() => import('@/components/apps/ChatStreamApp').then(mod => mod.ChatStreamApp), {
+    loading: () => <div className="p-4 text-pastel-text">Loading Stream...</div>,
+    ssr: false
+});
+
 // Simple content renderer based on type
 const WindowContentRenderer = ({ type, content }: { type: string, content: WindowContent }) => {
     if (type === 'component') {
         if (content === 'terminal') return <Terminal />;
+        if (content === 'stream-chat') return <ChatStreamApp />;
 
         // Handle Explorer (string or object config)
         if (content === 'explorer') return <FileExplorer />;
@@ -73,9 +79,7 @@ export const Desktop = () => {
                     !win.isMinimized && (
                         <Window
                             key={win.id}
-                            id={win.id}
-                            title={win.title}
-                            zIndex={win.zIndex}
+                            windowState={win}
                         >
                             <WindowContentRenderer type={win.type} content={win.content} />
                         </Window>

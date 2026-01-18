@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useRef } from 'react';
 
 export type WindowContent = string | null | { app: string; initialPath?: string[] };
 
@@ -30,10 +30,12 @@ interface DesktopContextType {
     toggleMaximizeWindow: (id: string) => void;
     focusWindow: (id: string) => void;
     updateWindowPosition: (id: string, position: { x: number; y: number }) => void;
+    updateWindowSize: (id: string, size: { width: number; height: number }) => void;
     toggleTheme: () => void;
 }
 
-const DesktopContext = createContext<DesktopContextType | undefined>(undefined);
+const DesktopStateContext = createContext<Omit<DesktopContextType, 'openWindow' | 'closeWindow' | 'minimizeWindow' | 'toggleMaximizeWindow' | 'focusWindow' | 'updateWindowPosition' | 'updateWindowSize' | 'toggleTheme'> | undefined>(undefined);
+const DesktopDispatchContext = createContext<Pick<DesktopContextType, 'openWindow' | 'closeWindow' | 'minimizeWindow' | 'toggleMaximizeWindow' | 'focusWindow' | 'updateWindowPosition' | 'updateWindowSize' | 'toggleTheme'> | undefined>(undefined);
 
 export const DesktopProvider = ({ children }: { children: ReactNode }) => {
     const [windows, setWindows] = useState<WindowState[]>([]);
@@ -53,19 +55,42 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
         }
     }, []);
 
-    const toggleTheme = () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light';
+    // State Refs for stable actions
+    const stateRef = useRef({ windows, activeWindowId, maxZIndex, theme });
+    useEffect(() => {
+        stateRef.current = { windows, activeWindowId, maxZIndex, theme };
+    }, [windows, activeWindowId, maxZIndex, theme]);
+
+    const toggleTheme = React.useCallback(() => {
+        const currentTheme = stateRef.current.theme;
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
         setTheme(newTheme);
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('mai-theme', newTheme);
-    };
+    }, []);
 
-    const openWindow = (windowData: Partial<WindowState> & { id: string }) => {
-        const existing = windows.find(w => w.id === windowData.id);
+    const focusWindow = React.useCallback((id: string) => {
+        setWindows(prev => {
+            // Optimization: Don't update if already top and focused
+            // But we need to verify logic. Safe to just map.
+            return prev.map(w => w.id === id ? { ...w, zIndex: stateRef.current.maxZIndex + 1 } : w);
+        });
+        setActiveWindowId(id);
+        setMaxZIndex(prev => prev + 1);
+    }, []);
+
+    const openWindow = React.useCallback((windowData: Partial<WindowState> & { id: string }) => {
+        const { windows: currentWindows, maxZIndex: currentMaxZ } = stateRef.current;
+        const existing = currentWindows.find(w => w.id === windowData.id);
+
         if (existing) {
             if (existing.isMinimized) {
-                setWindows(prev => prev.map(w => w.id === windowData.id ? { ...w, isMinimized: false, zIndex: maxZIndex + 1 } : w));
+                setWindows(prev => prev.map(w => w.id === windowData.id ? { ...w, isMinimized: false, zIndex: currentMaxZ + 1 } : w));
             }
+            // We can call focusWindow, but it uses setStates.
+            // Be careful of batching. direct call is better if we didn't just setWindows above?
+            // Actually, just update logic here to match focusWindow behavior for consistency or call it.
+            // focusWindow is stable, so calling it is fine.
             focusWindow(existing.id);
             return;
         }
@@ -78,31 +103,31 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
             isOpen: true,
             isMinimized: false,
             isMaximized: false,
-            zIndex: maxZIndex + 1,
-            position: windowData.position || { x: 60 + (windows.length * 20), y: 100 + (windows.length * 20) },
+            zIndex: currentMaxZ + 1,
+            position: windowData.position || { x: 60 + (currentWindows.length * 20), y: 100 + (currentWindows.length * 20) },
             size: windowData.size || { width: 600, height: 400 },
         };
 
-        setWindows([...windows, newWindow]);
+        setWindows(prev => [...prev, newWindow]);
         setActiveWindowId(newWindow.id);
         setMaxZIndex(prev => prev + 1);
-    };
+    }, [focusWindow]);
 
-    const closeWindow = (id: string) => {
+    const closeWindow = React.useCallback((id: string) => {
         setWindows(prev => prev.filter(w => w.id !== id));
-        if (activeWindowId === id) {
+        if (stateRef.current.activeWindowId === id) {
             setActiveWindowId(null);
         }
-    };
+    }, []);
 
-    const minimizeWindow = (id: string) => {
+    const minimizeWindow = React.useCallback((id: string) => {
         setWindows(prev => prev.map(w => w.id === id ? { ...w, isMinimized: true } : w));
-        if (activeWindowId === id) {
+        if (stateRef.current.activeWindowId === id) {
             setActiveWindowId(null);
         }
-    };
+    }, []);
 
-    const toggleMaximizeWindow = (id: string) => {
+    const toggleMaximizeWindow = React.useCallback((id: string) => {
         setWindows(prev => prev.map(w => {
             if (w.id !== id) return w;
 
@@ -120,21 +145,21 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
                 };
             }
         }));
-    };
+    }, []);
 
-    const focusWindow = (id: string) => {
-        setActiveWindowId(id);
-        setWindows(prev => prev.map(w => w.id === id ? { ...w, zIndex: maxZIndex + 1 } : w));
-        setMaxZIndex(prev => prev + 1);
-    };
-
-    const updateWindowPosition = (id: string, position: { x: number; y: number }) => {
+    const updateWindowPosition = React.useCallback((id: string, position: { x: number; y: number }) => {
         setWindows(prev => prev.map(w => w.id === id ? { ...w, position } : w));
-    };
+    }, []);
 
+    const updateWindowSize = React.useCallback((id: string, size: { width: number; height: number }) => {
+        setWindows(prev => prev.map(w => w.id === id ? { ...w, size } : w));
+    }, []);
+
+    // Initialize Default Window
     useEffect(() => {
-        const welcomeExists = windows.some(w => w.id === 'welcome');
-        if (!welcomeExists && windows.length === 0) {
+        const { windows: currentWindows } = stateRef.current;
+        const welcomeExists = currentWindows.some(w => w.id === 'welcome');
+        if (!welcomeExists && currentWindows.length === 0) {
             openWindow({
                 id: 'welcome',
                 title: 'Welcome to MaiOS',
@@ -145,28 +170,41 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Memoize Actions - NOW STABLE
+    const actions = useMemo(() => ({
+        openWindow,
+        closeWindow,
+        minimizeWindow,
+        toggleMaximizeWindow,
+        focusWindow,
+        updateWindowPosition,
+        updateWindowSize,
+        toggleTheme
+    }), [openWindow, closeWindow, minimizeWindow, toggleMaximizeWindow, focusWindow, updateWindowPosition, updateWindowSize, toggleTheme]);
+
     return (
-        <DesktopContext.Provider value={{
-            windows,
-            activeWindowId,
-            theme,
-            openWindow,
-            closeWindow,
-            minimizeWindow,
-            toggleMaximizeWindow,
-            focusWindow,
-            updateWindowPosition,
-            toggleTheme
-        }}>
-            {children}
-        </DesktopContext.Provider>
+        <DesktopStateContext.Provider value={{ windows, activeWindowId, theme }}>
+            <DesktopDispatchContext.Provider value={actions}>
+                {children}
+            </DesktopDispatchContext.Provider>
+        </DesktopStateContext.Provider>
     );
 };
 
-export const useDesktop = () => {
-    const context = useContext(DesktopContext);
-    if (!context) {
-        throw new Error('useDesktop must be used within a DesktopProvider');
-    }
+export const useDesktopState = () => {
+    const context = useContext(DesktopStateContext);
+    if (!context) throw new Error('useDesktopState must be used within a DesktopProvider');
     return context;
+};
+
+export const useDesktopActions = () => {
+    const context = useContext(DesktopDispatchContext);
+    if (!context) throw new Error('useDesktopActions must be used within a DesktopProvider');
+    return context;
+};
+
+export const useDesktop = () => {
+    const state = useDesktopState();
+    const actions = useDesktopActions();
+    return { ...state, ...actions };
 };

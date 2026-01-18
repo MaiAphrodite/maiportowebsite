@@ -1,33 +1,45 @@
 "use client";
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import Draggable from 'react-draggable';
-import { useDesktop } from '@/context/DesktopContext';
+import { useDesktopActions } from '@/context/DesktopContext';
 import { motion } from 'framer-motion';
 import { WindowHeader } from './window/WindowHeader';
 import { useMobile } from '@/hooks/useMobile';
+import { WindowState } from '@/context/DesktopContext';
 
 interface WindowProps {
-    id: string;
-    title: string;
+    windowState: WindowState;
     children: React.ReactNode;
-    zIndex: number;
 }
 
-export const Window = ({ id, title, children, zIndex }: WindowProps) => {
-    const { closeWindow, minimizeWindow, toggleMaximizeWindow, focusWindow, updateWindowPosition, windows } = useDesktop();
-    const nodeRef = useRef(null);
-    const [isDragging, setIsDragging] = useState(false);
+export const Window = React.memo(({ windowState, children }: WindowProps) => {
+    const { id, title, zIndex } = windowState;
+    const { closeWindow, minimizeWindow, toggleMaximizeWindow, focusWindow, updateWindowPosition, updateWindowSize } = useDesktopActions();
+    const nodeRef = useRef<HTMLDivElement>(null);
     const isMobile = useMobile();
 
-    const windowState = windows.find(w => w.id === id);
-    if (!windowState) return null;
-
-    // On mobile, always behave as maximized
+    // Derived state
     const isMaximized = isMobile || windowState.isMaximized;
-
-    // Cap z-index below taskbar (9999)
     const cappedZIndex = Math.min(zIndex, 8999);
+
+    // Resize Observer to sync CSS resize back to state
+    useEffect(() => {
+        if (!nodeRef.current || isMaximized || isMobile) return;
+
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const { width, height } = entry.contentRect;
+                // Only update if dimensions actually changed significantly (throttling slightly)
+                if (Math.abs(width - windowState.size.width) > 5 || Math.abs(height - windowState.size.height) > 5) {
+                    updateWindowSize(id, { width, height });
+                }
+            }
+        });
+
+        observer.observe(nodeRef.current);
+        return () => observer.disconnect();
+    }, [id, isMaximized, isMobile, updateWindowSize, windowState.size.width, windowState.size.height]);
 
     const draggableKey = isMaximized ? `win-${id}-max` : `win-${id}-restored`;
     const initialPos = isMaximized ? { x: 0, y: 0 } : windowState.position;
@@ -39,12 +51,10 @@ export const Window = ({ id, title, children, zIndex }: WindowProps) => {
             defaultPosition={initialPos}
             nodeRef={nodeRef}
             onStart={() => {
-                if (isMobile) return false; // Disable drag on mobile
-                setIsDragging(true);
+                if (isMobile) return false;
                 focusWindow(id);
             }}
             onStop={(e, data) => {
-                setIsDragging(false);
                 if (!isMaximized && !isMobile) {
                     updateWindowPosition(id, { x: data.x, y: data.y });
                 }
@@ -55,19 +65,19 @@ export const Window = ({ id, title, children, zIndex }: WindowProps) => {
                 ref={nodeRef}
                 className={`shadow-xl ${isMaximized
                     ? 'fixed left-0 right-0 bottom-0 !transform-none transition-all duration-300 ease-in-out'
-                    : `absolute ${isDragging ? '' : 'transition-all duration-300 ease-in-out'}`
+                    : `absolute`
                     }`}
                 style={{
                     zIndex: cappedZIndex,
                     ...(isMaximized ? {
-                        top: isMobile ? '48px' : '56px', // h-12 = 48px, h-14 = 56px
+                        top: isMobile ? '48px' : '56px',
                         width: '100%',
                         height: isMobile ? 'calc(100vh - 48px)' : 'calc(100vh - 56px)',
                     } : {
-                        width: '600px',
-                        height: '400px',
+                        width: `${windowState.size?.width || 600}px`,
+                        height: `${windowState.size?.height || 400}px`,
                         resize: 'both' as const,
-                        minWidth: '300px',
+                        minWidth: '320px',
                         minHeight: '200px',
                     }),
                     overflow: 'auto',
@@ -102,4 +112,10 @@ export const Window = ({ id, title, children, zIndex }: WindowProps) => {
             </div>
         </Draggable>
     );
-};
+}, (prevProps, nextProps) => {
+    // Custom comparison for React.memo
+    // Only re-render if the windowState for THIS window has changed.
+    return prevProps.windowState === nextProps.windowState && prevProps.children === nextProps.children;
+});
+
+Window.displayName = 'Window';
