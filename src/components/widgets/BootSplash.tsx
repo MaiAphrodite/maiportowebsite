@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 const BOOT_MESSAGES = [
@@ -17,21 +17,6 @@ export const BootSplash = () => {
     const [displayedText, setDisplayedText] = useState("");
     const [isComplete, setIsComplete] = useState(false);
     const [isFadingOut, setIsFadingOut] = useState(false);
-    const [isDark, setIsDark] = useState(false);
-
-    // Detect theme
-    useEffect(() => {
-        const checkTheme = () => {
-            setIsDark(document.documentElement.getAttribute('data-theme') === 'dark');
-        };
-        checkTheme();
-
-        // Watch for theme changes
-        const observer = new MutationObserver(checkTheme);
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-
-        return () => observer.disconnect();
-    }, []);
 
     // Track actual browser load progress
     useEffect(() => {
@@ -119,26 +104,6 @@ export const BootSplash = () => {
 
     if (isComplete) return null;
 
-    // Theme-aware colors
-    const theme = {
-        bg: isDark
-            ? 'linear-gradient(135deg, #1E1E2E 0%, #2D2D3A 50%, #181825 100%)'
-            : 'linear-gradient(135deg, #FDFDD0 0%, #FFE4EC 50%, #FFD1DC 100%)',
-        dots: isDark ? '#FF69B4' : '#FFB6C1',
-        glow: isDark ? 'rgba(255, 105, 180, 0.4)' : '#FFB6C1',
-        title: isDark ? '#E0E0E0' : '#2D2D3A',
-        subtitle: isDark ? '#A0A0A0' : '#6B7280',
-        cardBg: isDark ? 'rgba(45, 45, 58, 0.8)' : 'rgba(255, 255, 255, 0.7)',
-        cardBorder: isDark ? '#FF69B4' : '#FFD1DC',
-        text: isDark ? '#E0E0E0' : '#4A4A4A',
-        progressBg: isDark ? 'rgba(30, 30, 46, 0.8)' : 'rgba(255, 255, 255, 0.6)',
-        progressFill: isDark
-            ? 'linear-gradient(90deg, #FF69B4 0%, #00FFFF 100%)'
-            : 'linear-gradient(90deg, #FF69B4 0%, #FFB6C1 100%)',
-        footer: isDark ? '#6B7280' : '#9CA3AF',
-        hearts: isDark ? '#FF69B4' : '#FFB6C1'
-    };
-
     return (
         <div
             className={`
@@ -146,21 +111,21 @@ export const BootSplash = () => {
                 transition-all duration-500 ease-out
                 ${isFadingOut ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}
             `}
-            style={{ background: theme.bg }}
+            style={{ background: 'var(--desktop-bg)' }}
         >
             {/* Soft decorative dots pattern */}
             <div
                 className="absolute inset-0 opacity-20"
                 style={{
-                    backgroundImage: `radial-gradient(circle, ${theme.dots} 1px, transparent 1px)`,
+                    backgroundImage: `radial-gradient(circle, var(--boot-dots) 1px, transparent 1px)`,
                     backgroundSize: '30px 30px'
                 }}
             />
 
             {/* Floating decorative hearts */}
-            <div className="absolute top-20 left-20 text-4xl opacity-20 animate-bounce" style={{ animationDuration: '3s', color: theme.hearts }}>♡</div>
-            <div className="absolute top-32 right-24 text-2xl opacity-15 animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s', color: theme.hearts }}>♡</div>
-            <div className="absolute bottom-32 left-32 text-3xl opacity-20 animate-bounce" style={{ animationDuration: '2.8s', animationDelay: '1s', color: theme.hearts }}>♡</div>
+            <div className="absolute top-20 left-20 text-4xl opacity-20 animate-bounce" style={{ animationDuration: '3s', color: 'var(--boot-hearts)' }}>♡</div>
+            <div className="absolute top-32 right-24 text-2xl opacity-15 animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s', color: 'var(--boot-hearts)' }}>♡</div>
+            <div className="absolute bottom-32 left-32 text-3xl opacity-20 animate-bounce" style={{ animationDuration: '2.8s', animationDelay: '1s', color: 'var(--boot-hearts)' }}>♡</div>
 
             {/* Logo Container */}
             <div className="relative mb-6">
@@ -169,12 +134,14 @@ export const BootSplash = () => {
                     className="relative w-36 h-36 md:w-44 md:h-44"
                     style={{ animation: 'gentle-float 2.5s ease-in-out infinite' }}
                 >
+                    <div className="absolute inset-0 rounded-full bg-white/5 backdrop-blur-sm -z-10" />
                     <Image
                         src="/assets/maiveclogo.png"
                         alt="Mai"
                         fill
-                        className="object-contain"
+                        className="object-contain drop-shadow-xl"
                         priority
+                        sizes="(max-width: 768px) 144px, 176px"
                     />
                 </div>
             </div>
@@ -183,14 +150,14 @@ export const BootSplash = () => {
             <h1
                 className="text-3xl md:text-4xl font-bold mb-2"
                 style={{
-                    color: theme.title,
+                    color: 'var(--boot-title)',
                     fontFamily: 'var(--font-fredoka), var(--font-mplus), sans-serif'
                 }}
             >
                 MaiOS
             </h1>
 
-            <p className="text-sm mb-8" style={{ color: theme.subtitle }}>
+            <p className="text-sm mb-8" style={{ color: 'var(--mai-subtext)' }}>
                 Your cozy desktop companion~
             </p>
 
@@ -198,16 +165,16 @@ export const BootSplash = () => {
             <div
                 className="mb-8 px-6 py-3 rounded-2xl"
                 style={{
-                    background: theme.cardBg,
-                    border: `2px solid ${theme.cardBorder}`,
+                    background: 'var(--boot-card-bg)',
+                    border: '2px solid var(--mai-border)',
                     minWidth: '280px',
                     textAlign: 'center'
                 }}
             >
-                <span style={{ color: theme.text, fontSize: '0.95rem' }}>
+                <span style={{ color: 'var(--mai-text)', fontSize: '0.95rem' }}>
                     {displayedText || BOOT_MESSAGES[currentMessageIndex]}
                     {loadProgress < 100 && (
-                        <span className="animate-pulse" style={{ color: '#FF69B4' }}> ●</span>
+                        <span className="animate-pulse" style={{ color: 'var(--mai-primary)' }}> ●</span>
                     )}
                 </span>
             </div>
@@ -217,19 +184,19 @@ export const BootSplash = () => {
                 <div
                     className="h-3 rounded-full overflow-hidden"
                     style={{
-                        background: theme.progressBg,
-                        border: `2px solid ${theme.cardBorder}`
+                        background: 'var(--boot-progress-bg)',
+                        border: '2px solid var(--mai-border)'
                     }}
                 >
                     <div
                         className="h-full rounded-full transition-all duration-300 ease-out"
                         style={{
                             width: `${loadProgress}%`,
-                            background: theme.progressFill
+                            background: 'var(--boot-progress-fill)'
                         }}
                     />
                 </div>
-                <div className="text-center mt-3" style={{ color: theme.footer, fontSize: '0.75rem' }}>
+                <div className="text-center mt-3" style={{ color: 'var(--boot-footer)', fontSize: '0.75rem' }}>
                     {Math.round(loadProgress)}%
                 </div>
             </div>
@@ -237,7 +204,7 @@ export const BootSplash = () => {
             {/* Footer */}
             <div
                 className="absolute bottom-8 text-xs"
-                style={{ color: theme.footer }}
+                style={{ color: 'var(--boot-footer)' }}
             >
                 Mai Aphrodite • made with ♡
             </div>
