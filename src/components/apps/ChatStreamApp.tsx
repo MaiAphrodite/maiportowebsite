@@ -8,6 +8,8 @@ import { TextStreamChatTransport } from 'ai';
 import { maiCharacter } from '@/data/characters';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { useDesktopActions, useDesktopState } from '@/context/DesktopContext';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 type MessagePart = { type: string; text?: string };
 type ChatMessage = { id: string; role: string; content?: string; parts?: MessagePart[] };
@@ -186,7 +188,7 @@ const StreamFeed = React.memo(({
 
             {/* Hover Controls - Soft style */}
             <div className="absolute bottom-0 left-0 right-0 h-12 bg-mai-surface/95 opacity-0 group-hover:opacity-100 transition-opacity flex items-center px-4 gap-4 rounded-b-xl">
-                <button className="text-mai-text hover:text-mai-primary transition-colors"><Maximize2 size={18} /></button>
+                <Button variant="ghost" size="icon" className="text-mai-text hover:text-mai-primary hover:bg-transparent"><Maximize2 size={18} /></Button>
                 <div className="flex-1 h-1.5 bg-mai-surface-dim rounded-full overflow-hidden">
                     <div className="w-full h-full bg-pink-400 rounded-full" />
                 </div>
@@ -229,6 +231,36 @@ const ChatSidebar = React.memo(({
     isCompact: boolean
 }) => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const inputContainerRef = useRef<HTMLDivElement>(null);
+    const [keyboardOffset, setKeyboardOffset] = useState(0);
+
+    // Handle mobile keyboard visibility using visualViewport API
+    useEffect(() => {
+        const viewport = window.visualViewport;
+        if (!viewport) return;
+
+        const handleResize = () => {
+            // Calculate keyboard height: difference between window height and viewport height
+            const keyboardHeight = window.innerHeight - viewport.height;
+            // Only apply offset if keyboard is actually open (height threshold)
+            setKeyboardOffset(keyboardHeight > 100 ? keyboardHeight : 0);
+
+            // Scroll the input into view when keyboard opens
+            if (keyboardHeight > 100 && inputContainerRef.current) {
+                setTimeout(() => {
+                    inputContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }, 100);
+            }
+        };
+
+        viewport.addEventListener('resize', handleResize);
+        viewport.addEventListener('scroll', handleResize);
+
+        return () => {
+            viewport.removeEventListener('resize', handleResize);
+            viewport.removeEventListener('scroll', handleResize);
+        };
+    }, []);
 
     // Helper for pure text extraction
     const getMessageContent = (msg?: ChatMessage) => {
@@ -297,26 +329,34 @@ const ChatSidebar = React.memo(({
             </div>
 
             {/* Chat Input */}
-            <div className="px-3 pt-2 border-t-2 border-mai-border relative" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
+            <div
+                ref={inputContainerRef}
+                className="px-3 pt-2 border-t-2 border-mai-border relative transition-all duration-200"
+                style={{
+                    paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom) + ${keyboardOffset}px)`,
+                }}
+            >
                 <form onSubmit={handleSubmit} className="flex gap-2 min-w-0">
-                    <input
+                    <Input
                         type="text"
                         value={input}
                         onChange={handleInputChange}
                         placeholder={token ? "Say something cute~" : "Verifying..."}
-                        className="flex-1 min-w-0 bg-mai-surface-dim text-mai-text rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-mai-primary border-2 border-mai-border disabled:opacity-50 placeholder:text-mai-subtext transition-all"
+                        className="flex-1 min-w-0 bg-mai-surface-dim text-mai-text rounded-full px-4 py-2.5 text-sm focus-visible:ring-mai-primary border-2 border-mai-border disabled:opacity-50 placeholder:text-mai-subtext transition-all h-auto"
                         disabled={!token}
                     />
-                    <button
+                    <Button
                         type="submit"
                         disabled={isLoading || !input.trim() || !token}
-                        className="p-2 bg-pink-400 text-white rounded-full hover:bg-pink-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        variant="default"
+                        size="icon"
+                        className="bg-pink-400 hover:bg-pink-500 text-white rounded-full shrink-0"
                     >
                         <Send size={16} />
-                    </button>
-                    <button type="button" className="p-2.5 text-mai-subtext hover:text-pink-500 transition-colors">
+                    </Button>
+                    <Button variant="ghost" size="icon" type="button" className="text-mai-subtext hover:text-pink-500 hover:bg-transparent shrink-0">
                         <Heart size={18} />
-                    </button>
+                    </Button>
                 </form>
                 {/* Turnstile */}
                 {!token && (
@@ -431,10 +471,10 @@ export const ChatStreamApp = () => {
                         <div className="w-3 h-3 rounded-full bg-green-400" />
                     </div>
                     {/* URL bar */}
-                    <div className="flex-1 max-w-xl mx-4 bg-mai-surface-dim rounded-full px-4 py-1.5 text-xs text-mai-subtext flex items-center gap-2 border-2 border-mai-border">
+                    <div className="flex-1 max-w-xl mx-4 bg-mai-surface-dim rounded-xl px-4 py-1.5 text-xs text-mai-subtext flex items-center gap-2 border-2 border-mai-border">
                         <span className="text-pink-500">♡</span>
                         <span className="text-mai-text font-medium">mai.stream/live</span>
-                        <span className="ml-auto text-[10px] bg-gradient-to-r from-pink-400 to-rose-400 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                        <span className="ml-auto text-[10px] bg-gradient-to-r from-pink-400 to-rose-400 text-white px-2 py-0.5 rounded-xl">LIVE</span>
                     </div>
                 </div>
             </div>
