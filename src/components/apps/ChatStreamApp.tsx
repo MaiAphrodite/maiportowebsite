@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Send, MoreHorizontal, Heart, RotateCw, Maximize2 } from 'lucide-react';
+import { Send, MoreHorizontal, Heart, RotateCw, Maximize2, Eye, EyeOff, MessageSquare } from 'lucide-react';
 import { useChat } from '@ai-sdk/react';
 import { TextStreamChatTransport } from 'ai';
 import { maiCharacter } from '@/data/characters';
@@ -222,6 +222,7 @@ StreamFeed.displayName = 'StreamFeed';
 // Sub-component: Chat Sidebar (Static during typing)
 const ChatSidebar = React.memo(({
     userMessages,
+    aiMessages,
     status,
     isLoading,
     token,
@@ -229,9 +230,12 @@ const ChatSidebar = React.memo(({
     input,
     handleInputChange,
     handleSubmit,
-    isCompact
+    isCompact,
+    showAiReplies,
+    setShowAiReplies
 }: {
     userMessages: ChatMessage[],
+    aiMessages: ChatMessage[],
     status: string,
     isLoading: boolean,
     token: string | null,
@@ -239,10 +243,13 @@ const ChatSidebar = React.memo(({
     input: string,
     handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
     handleSubmit: (e: React.FormEvent) => void,
-    isCompact: boolean
+    isCompact: boolean,
+    showAiReplies: boolean,
+    setShowAiReplies: (v: boolean) => void
 }) => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     // Helper for pure text extraction
     const getMessageContent = (msg?: ChatMessage) => {
@@ -254,9 +261,14 @@ const ChatSidebar = React.memo(({
         return '';
     };
 
+    // Combine and sort messages if showing AI replies
+    const displayMessages = showAiReplies
+        ? [...userMessages, ...aiMessages].sort((a, b) => a.id.localeCompare(b.id))
+        : userMessages;
+
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [userMessages.length]);
+    }, [displayMessages.length]);
 
     return (
         <div className={`
@@ -266,12 +278,38 @@ const ChatSidebar = React.memo(({
                 : 'w-[300px] flex-none min-h-0 my-3 mr-3'
             }
         `}>
-            {/* Header */}
-            <div className="p-3 border-b-2 border-mai-border flex justify-between items-center shrink-0">
+            {/* Header with Settings Menu */}
+            <div className="p-3 border-b-2 border-mai-border flex justify-between items-center shrink-0 relative">
                 <span className="text-mai-text font-semibold flex items-center gap-2">
                     💬 Chat
                 </span>
-                <MoreHorizontal size={16} className="text-mai-subtext" />
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-6 h-6 text-mai-subtext hover:text-mai-text"
+                    onClick={() => setMenuOpen(!menuOpen)}
+                >
+                    <MoreHorizontal size={16} />
+                </Button>
+
+                {/* Dropdown Menu */}
+                {menuOpen && (
+                    <>
+                        <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                        <div className="absolute right-0 top-full mt-1 bg-mai-surface border-2 border-mai-border rounded-xl shadow-lg z-50 min-w-[180px] overflow-hidden">
+                            <button
+                                onClick={() => {
+                                    setShowAiReplies(!showAiReplies);
+                                    setMenuOpen(false);
+                                }}
+                                className="w-full px-3 py-2.5 flex items-center gap-2 text-sm text-mai-text hover:bg-mai-surface-dim transition-colors text-left"
+                            >
+                                {showAiReplies ? <Eye size={14} /> : <EyeOff size={14} />}
+                                <span>{showAiReplies ? 'Showing AI replies' : 'AI replies hidden'}</span>
+                            </button>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Mobile: Input at top (below video), Desktop: Input at bottom */}
@@ -326,22 +364,32 @@ const ChatSidebar = React.memo(({
                     </div>
                 </div>
 
-                {userMessages.map((msg: ChatMessage, index: number) => (
-                    <div key={msg.id} className="flex gap-2 items-start">
-                        <div className="w-6 h-6 rounded-full bg-blue-400 flex-shrink-0 flex items-center justify-center text-[9px] text-white font-bold">You</div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                                <span className="text-mai-secondary text-xs font-semibold">You</span>
-                                {status === 'submitted' && index === userMessages.length - 1 && (
-                                    <RotateCw size={12} className="text-mai-subtext animate-spin" />
-                                )}
+                {displayMessages.map((msg: ChatMessage, index: number) => {
+                    const isUser = msg.role === 'user';
+                    const isLastUserMsg = isUser && msg.id === userMessages[userMessages.length - 1]?.id;
+
+                    return (
+                        <div key={msg.id} className="flex gap-2 items-start">
+                            <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] text-white font-bold ${isUser ? 'bg-blue-400' : 'bg-pink-400'
+                                }`}>
+                                {isUser ? 'You' : '♡'}
                             </div>
-                            <span className={`text-sm break-words leading-relaxed ${isLoading && index === userMessages.length - 1 ? 'text-mai-subtext' : 'text-mai-text'}`}>
-                                {getMessageContent(msg)}
-                            </span>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-xs font-semibold ${isUser ? 'text-mai-secondary' : 'text-mai-primary'}`}>
+                                        {isUser ? 'You' : 'Mai'}
+                                    </span>
+                                    {status === 'submitted' && isLastUserMsg && (
+                                        <RotateCw size={12} className="text-mai-subtext animate-spin" />
+                                    )}
+                                </div>
+                                <span className={`text-sm break-words leading-relaxed ${isLoading && isLastUserMsg ? 'text-mai-subtext' : 'text-mai-text'}`}>
+                                    {getMessageContent(msg)}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
 
                 {isLoading && (
                     <div className="flex gap-2 items-start opacity-50">
@@ -450,7 +498,9 @@ export const ChatStreamApp = () => {
     };
 
     const userMessages = messages.filter((m: ChatMessage) => m.role === 'user');
+    const aiMessages = messages.filter((m: ChatMessage) => m.role === 'assistant' && m.id !== 'welcome');
     const latestAssistantMessage = [...messages].reverse().find((m: ChatMessage) => m.role === 'assistant');
+    const [showAiReplies, setShowAiReplies] = useState(false);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [isCompact, setIsCompact] = useState(false);
@@ -510,6 +560,7 @@ export const ChatStreamApp = () => {
 
                 <ChatSidebar
                     userMessages={userMessages}
+                    aiMessages={aiMessages}
                     status={status}
                     isLoading={isLoading}
                     token={token}
@@ -518,6 +569,8 @@ export const ChatStreamApp = () => {
                     handleInputChange={handleInputChange}
                     handleSubmit={handleSubmit}
                     isCompact={isCompact}
+                    showAiReplies={showAiReplies}
+                    setShowAiReplies={setShowAiReplies}
                 />
             </div>
         </div>
