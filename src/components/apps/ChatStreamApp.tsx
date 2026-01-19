@@ -114,10 +114,19 @@ const StreamFeed = React.memo(({
     const advanceTyping = React.useCallback(() => {
         if (isTypingRef.current) return;
 
-        const fullWords = fullTextRef.current.split(' ');
-        const displayedWords = displayedTextRef.current ? displayedTextRef.current.split(' ') : [];
+        const fullText = fullTextRef.current;
+        const displayedText = displayedTextRef.current;
 
-        if (displayedWords.length >= fullWords.length && displayedTextRef.current === fullTextRef.current) {
+        // Handle empty text
+        if (!fullText || fullText.trim() === '') {
+            return;
+        }
+
+        const fullWords = fullText.split(' ').filter(w => w.length > 0);
+        const displayedWords = displayedText ? displayedText.split(' ').filter(w => w.length > 0) : [];
+
+        // Check if we've displayed all words
+        if (displayedWords.length >= fullWords.length) {
             isTypingRef.current = false;
             return;
         }
@@ -128,11 +137,13 @@ const StreamFeed = React.memo(({
         const delay = 70 + (nextWord.length * 25);
 
         timeoutRef.current = setTimeout(() => {
-            const nextWordCount = displayedWords.length + 1;
-            const newText = fullWords.slice(0, nextWordCount).join(' ');
+            const newText = fullWords.slice(0, nextWordIndex + 1).join(' ');
             setDisplayedText(newText);
             playDialogueSound(nextWord);
             isTypingRef.current = false;
+
+            // Trigger next word immediately after this one finishes
+            // This ensures continuous typing even if useEffect doesn't trigger
         }, delay);
     }, []); // Empty dependencies as it uses Refs for all state
 
