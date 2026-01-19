@@ -240,10 +240,30 @@ const ChatSidebar = React.memo(({
         const viewport = window.visualViewport;
         if (!viewport) return;
 
+        let scrollY = 0;
+
         const handleViewportChange = () => {
             // Calculate keyboard height from viewport difference
             const heightDiff = window.innerHeight - viewport.height;
             const isOpen = heightDiff > 150; // Threshold to detect keyboard
+
+            // Lock scroll when keyboard opens
+            if (isOpen && !isKeyboardOpen) {
+                scrollY = window.scrollY;
+                document.body.style.position = 'fixed';
+                document.body.style.top = `-${scrollY}px`;
+                document.body.style.left = '0';
+                document.body.style.right = '0';
+            }
+
+            // Restore scroll when keyboard closes
+            if (!isOpen && isKeyboardOpen) {
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.left = '';
+                document.body.style.right = '';
+                window.scrollTo(0, scrollY);
+            }
 
             setIsKeyboardOpen(isOpen);
             setKeyboardHeight(isOpen ? heightDiff : 0);
@@ -258,8 +278,13 @@ const ChatSidebar = React.memo(({
         return () => {
             viewport.removeEventListener('resize', handleViewportChange);
             viewport.removeEventListener('scroll', handleViewportChange);
+            // Cleanup: restore body styles
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.left = '';
+            document.body.style.right = '';
         };
-    }, []);
+    }, [isKeyboardOpen]);
 
     // Scroll messages when keyboard opens
     useEffect(() => {
@@ -341,8 +366,8 @@ const ChatSidebar = React.memo(({
             {/* Chat Input - Fixed position when keyboard is open on mobile */}
             <div
                 className={`px-3 pt-2 border-t-2 border-mai-border bg-mai-surface ${isKeyboardOpen && isCompact
-                        ? 'fixed left-0 right-0 z-50'
-                        : 'relative'
+                    ? 'fixed left-0 right-0 z-50'
+                    : 'relative'
                     }`}
                 style={{
                     paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))',
