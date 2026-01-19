@@ -231,36 +231,15 @@ const ChatSidebar = React.memo(({
     isCompact: boolean
 }) => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const inputContainerRef = useRef<HTMLDivElement>(null);
-    const [keyboardOffset, setKeyboardOffset] = useState(0);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-    // Handle mobile keyboard visibility using visualViewport API
-    useEffect(() => {
-        const viewport = window.visualViewport;
-        if (!viewport) return;
-
-        const handleResize = () => {
-            // Calculate keyboard height: difference between window height and viewport height
-            const keyboardHeight = window.innerHeight - viewport.height;
-            // Only apply offset if keyboard is actually open (height threshold)
-            setKeyboardOffset(keyboardHeight > 100 ? keyboardHeight : 0);
-
-            // Scroll the input into view when keyboard opens
-            if (keyboardHeight > 100 && inputContainerRef.current) {
-                setTimeout(() => {
-                    inputContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                }, 100);
-            }
-        };
-
-        viewport.addEventListener('resize', handleResize);
-        viewport.addEventListener('scroll', handleResize);
-
-        return () => {
-            viewport.removeEventListener('resize', handleResize);
-            viewport.removeEventListener('scroll', handleResize);
-        };
-    }, []);
+    // Scroll input into view when focused (keyboard opens)
+    const handleInputFocus = () => {
+        // Small delay to let keyboard animation complete
+        setTimeout(() => {
+            inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+    };
 
     // Helper for pure text extraction
     const getMessageContent = (msg?: ChatMessage) => {
@@ -330,17 +309,18 @@ const ChatSidebar = React.memo(({
 
             {/* Chat Input */}
             <div
-                ref={inputContainerRef}
-                className="px-3 pt-2 border-t-2 border-mai-border relative transition-all duration-200"
+                className="px-3 pt-2 border-t-2 border-mai-border relative"
                 style={{
-                    paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom) + ${keyboardOffset}px)`,
+                    paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))',
                 }}
             >
                 <form onSubmit={handleSubmit} className="flex gap-2 min-w-0">
                     <Input
+                        ref={inputRef}
                         type="text"
                         value={input}
                         onChange={handleInputChange}
+                        onFocus={handleInputFocus}
                         placeholder={token ? "Say something cute~" : "Verifying..."}
                         className="flex-1 min-w-0 bg-mai-surface-dim text-mai-text rounded-full px-4 py-2.5 text-sm focus-visible:ring-mai-primary border-2 border-mai-border disabled:opacity-50 placeholder:text-mai-subtext transition-all h-auto"
                         disabled={!token}
