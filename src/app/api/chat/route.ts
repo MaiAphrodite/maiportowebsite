@@ -1,9 +1,9 @@
 import { streamText } from 'ai';
-import { maiCharacter } from '@/data/characters';
-import { knowledgeBase } from '@/data/knowledge';
-import { getChatModel } from '@/lib/ai';
+import { maiCharacter } from '@/features/chat/characters';
+import { knowledgeBase } from '@/shared/data/knowledge';
+import { getChatModel } from '@/shared/lib/ai';
 import { cookies } from 'next/headers';
-import { signSession, verifySession } from '@/lib/session';
+import { signSession, verifySession } from '@/shared/lib/session';
 import { randomUUID } from 'crypto';
 
 // Allow streaming responses up to 30 seconds
@@ -133,8 +133,9 @@ export async function POST(req: Request) {
         });
 
         return result.toTextStreamResponse();
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("AI Generation Error:", error);
-        return new Response(`AI Error: ${error.message || 'Unknown error'}`, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return new Response(`AI Error: ${errorMessage}`, { status: 500 });
     }
 }

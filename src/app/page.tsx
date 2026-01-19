@@ -1,10 +1,10 @@
 import React from 'react';
-import { DesktopProvider } from '@/context/DesktopContext';
-import { Desktop } from '@/components/layout/Desktop';
-import { BootSplash } from '@/components/widgets/BootSplash';
+import { DesktopProvider } from '@/features/desktop';
+import { Desktop } from '@/features/desktop';
+import { BootSplash } from '@/features/desktop';
 
-import { NotificationProvider } from '@/context/NotificationContext';
-import { NotificationContainer } from '@/components/notifications/NotificationContainer';
+import { NotificationProvider } from '@/features/notifications';
+import { NotificationContainer } from '@/features/notifications';
 
 export default function Home() {
   return (

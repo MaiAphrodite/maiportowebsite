@@ -1,0 +1,44 @@
+name: Automerge
+
+on:
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+      - synchronize
+      - opened
+      - edited
+      - ready_for_review
+      - reopened
+      - unlocked
+  check_suite:
+    types:
+      - completed
+  status: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    name: Automerge
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Automerge
+        uses: pascalgn/automerge-action@v0.16.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Merge when:
+          # - All CI checks pass
+          # - PR has the "automerge" label
+          MERGE_LABELS: "automerge,!wip,!do-not-merge"
+          # Merge method: squash, merge, or rebase
+          MERGE_METHOD: "squash"
+          # Delete branch after merge
+          MERGE_DELETE_BRANCH: "true"
+          # Update branch before merging (rebase on main)
+          UPDATE_METHOD: "rebase"
+          # Wait for all checks to complete
+          MERGE_REQUIRED_APPROVALS: "0"
