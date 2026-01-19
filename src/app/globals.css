@@ -140,6 +140,25 @@ body {
 /* --- MOBILE FIXES --- */
 @media (max-width: 768px) {
 
+  /* Use dynamic viewport height that adjusts for keyboard */
+  html,
+  body {
+    height: 100dvh;
+    height: 100vh;
+    /* fallback */
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+
+  .desktop-container {
+    height: 100dvh;
+    height: 100vh;
+    /* fallback */
+    touch-action: manipulation;
+    overscroll-behavior: none;
+  }
+
   /* Disable text selection on interactive elements */
   button,
   .cursor-pointer {
@@ -154,14 +173,10 @@ body {
     height: 4px;
   }
 
-  /* Prevent vertical overscroll bounce on iOS, but allow horizontal for back gesture */
+  /* Prevent all overscroll bounce */
   body {
     overscroll-behavior-y: none;
-  }
-
-  /* Allow edge swipe gestures (back/home) while preventing double-tap-to-zoom */
-  .desktop-container {
-    touch-action: pan-x pan-y pinch-zoom;
+    overscroll-behavior-x: none;
   }
 }
 
