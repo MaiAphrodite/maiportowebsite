@@ -232,14 +232,43 @@ const ChatSidebar = React.memo(({
 }) => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-    // Scroll input into view when focused (keyboard opens)
-    const handleInputFocus = () => {
-        // Small delay to let keyboard animation complete
-        setTimeout(() => {
-            inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 300);
-    };
+    // Track keyboard visibility and height using visualViewport
+    useEffect(() => {
+        const viewport = window.visualViewport;
+        if (!viewport) return;
+
+        const handleViewportChange = () => {
+            // Calculate keyboard height from viewport difference
+            const heightDiff = window.innerHeight - viewport.height;
+            const isOpen = heightDiff > 150; // Threshold to detect keyboard
+
+            setIsKeyboardOpen(isOpen);
+            setKeyboardHeight(isOpen ? heightDiff : 0);
+        };
+
+        viewport.addEventListener('resize', handleViewportChange);
+        viewport.addEventListener('scroll', handleViewportChange);
+
+        // Initial check
+        handleViewportChange();
+
+        return () => {
+            viewport.removeEventListener('resize', handleViewportChange);
+            viewport.removeEventListener('scroll', handleViewportChange);
+        };
+    }, []);
+
+    // Scroll messages when keyboard opens
+    useEffect(() => {
+        if (isKeyboardOpen) {
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+    }, [isKeyboardOpen]);
 
     // Helper for pure text extraction
     const getMessageContent = (msg?: ChatMessage) => {
@@ -305,13 +334,21 @@ const ChatSidebar = React.memo(({
                     </div>
                 )}
                 <div ref={messagesEndRef} />
+                {/* Spacer when keyboard is open to prevent content being hidden */}
+                {isKeyboardOpen && isCompact && <div style={{ height: 60 }} />}
             </div>
 
-            {/* Chat Input */}
+            {/* Chat Input - Fixed position when keyboard is open on mobile */}
             <div
-                className="px-3 pt-2 border-t-2 border-mai-border relative"
+                className={`px-3 pt-2 border-t-2 border-mai-border bg-mai-surface ${isKeyboardOpen && isCompact
+                        ? 'fixed left-0 right-0 z-50'
+                        : 'relative'
+                    }`}
                 style={{
                     paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))',
+                    ...(isKeyboardOpen && isCompact ? {
+                        bottom: keyboardHeight,
+                    } : {})
                 }}
             >
                 <form onSubmit={handleSubmit} className="flex gap-2 min-w-0">
@@ -320,7 +357,6 @@ const ChatSidebar = React.memo(({
                         type="text"
                         value={input}
                         onChange={handleInputChange}
-                        onFocus={handleInputFocus}
                         placeholder={token ? "Say something cute~" : "Verifying..."}
                         className="flex-1 min-w-0 bg-mai-surface-dim text-mai-text rounded-full px-4 py-2.5 text-sm focus-visible:ring-mai-primary border-2 border-mai-border disabled:opacity-50 placeholder:text-mai-subtext transition-all h-auto"
                         disabled={!token}
