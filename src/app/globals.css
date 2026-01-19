@@ -154,14 +154,14 @@ body {
     height: 4px;
   }
 
-  /* Prevent overscroll bounce on iOS */
+  /* Prevent vertical overscroll bounce on iOS, but allow horizontal for back gesture */
   body {
-    overscroll-behavior: none;
+    overscroll-behavior-y: none;
   }
 
-  /* Ensure proper touch behavior */
+  /* Allow edge swipe gestures (back/home) while preventing double-tap-to-zoom */
   .desktop-container {
-    touch-action: manipulation;
+    touch-action: pan-x pan-y pinch-zoom;
   }
 }
 

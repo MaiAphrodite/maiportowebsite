@@ -1,8 +1,9 @@
 "use client";
 
-import React from 'react';
-import { useDesktop, type WindowContent } from '@/context/DesktopContext';
+import React, { useCallback } from 'react';
+import { useDesktop, useDesktopActions, type WindowContent } from '@/context/DesktopContext';
 import { useMobile } from '@/hooks/useMobile';
+import { useMobileGestures } from '@/hooks/useMobileGestures';
 import { Taskbar } from './Taskbar';
 import { DesktopIcons } from './DesktopIcons';
 import { Window } from './Window';
@@ -62,8 +63,31 @@ const WindowContentRenderer = ({ type, content }: { type: string, content: Windo
 };
 
 export const Desktop = () => {
-    const { windows } = useDesktop();
+    const { windows, activeWindowId } = useDesktop();
+    const { minimizeWindow } = useDesktopActions();
     const isMobile = useMobile();
+
+    // Handle back gesture - minimize active window
+    const handleBack = useCallback(() => {
+        if (activeWindowId) {
+            minimizeWindow(activeWindowId);
+        }
+    }, [activeWindowId, minimizeWindow]);
+
+    // Handle home gesture - minimize all windows
+    const handleHome = useCallback(() => {
+        windows.forEach(w => {
+            if (!w.isMinimized) {
+                minimizeWindow(w.id);
+            }
+        });
+    }, [windows, minimizeWindow]);
+
+    // Only enable gestures on mobile
+    useMobileGestures(isMobile ? {
+        onBack: handleBack,
+        onHome: handleHome,
+    } : {});
 
     return (
         <div

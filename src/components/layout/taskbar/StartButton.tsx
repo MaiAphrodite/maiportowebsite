@@ -1,12 +1,12 @@
 "use client";
 
-import React from 'react';
+import { Button } from '@/components/ui/Button';
 import { Menu } from 'lucide-react';
 
 export const StartButton = () => {
     return (
-        <button className="p-2.5 bg-mai-primary rounded-2xl text-white hover:opacity-80 transition-all shadow-sm active:scale-95">
+        <Button variant="default" size="icon" className="rounded-2xl shadow-sm">
             <Menu size={24} />
-        </button>
+        </Button>
     );
 };
