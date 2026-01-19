@@ -133,8 +133,9 @@ export async function POST(req: Request) {
         });
 
         return result.toTextStreamResponse();
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("AI Generation Error:", error);
-        return new Response(`AI Error: ${error.message || 'Unknown error'}`, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return new Response(`AI Error: ${errorMessage}`, { status: 500 });
     }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, RotateCw, Home, Lock, Search, Globe, AlertTriangle, Tv } from 'lucide-react';
 import { SIMULATED_SITES, MOCK_SEARCH_RESULTS } from './browserData';
 import { useDesktopActions } from '@/features/desktop';
@@ -61,7 +61,7 @@ const HomePage = ({ onNavigate }: { onNavigate: (url: string) => void }) => {
 const SearchPage = ({ query }: { query: string }) => {
     return (
         <div className="p-8 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 className="text-xl font-medium text-mai-subtext mb-6">Results for "{query}"</h2>
+            <h2 className="text-xl font-medium text-mai-subtext mb-6">Results for &quot;{query}&quot;</h2>
 
             <div className="space-y-8">
                 {MOCK_SEARCH_RESULTS.map((result, i) => (
@@ -89,6 +89,7 @@ const SearchPage = ({ query }: { query: string }) => {
         </div>
     );
 };
+
 
 const ErrorPage = ({ url }: { url: string }) => (
     <div className="h-full flex flex-col items-center justify-center text-center p-8 text-mai-text">
@@ -168,7 +169,7 @@ export const BrowserApp = () => {
 
     const handleUrlSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        let target = inputUrl;
+        const target = inputUrl;
         if (!target.includes('://')) {
             // Auto search
             navigate(`mai://search?q=${encodeURIComponent(target)}`);

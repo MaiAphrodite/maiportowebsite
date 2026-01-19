@@ -7,7 +7,7 @@ import { useNotifications } from '@/features/notifications';
 export const ChatbotWidget = () => {
     const { openWindow } = useDesktopActions();
     const { windows } = useDesktopState();
-    const { addNotification, removeNotification, notifications } = useNotifications();
+    const { addNotification } = useNotifications();
 
     const isWindowOpen = windows.some(w => w.id === 'chat-stream');
 

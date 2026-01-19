@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { ArrowLeft, Search, RotateCw, Home, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Search, Home, ChevronRight } from 'lucide-react';
 
 interface ExplorerToolbarProps {
     currentPath: string[];

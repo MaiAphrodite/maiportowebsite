@@ -153,7 +153,7 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
 
     // History API Integration for Back Button Support
     useEffect(() => {
-        const handlePopState = (event: PopStateEvent) => {
+        const handlePopState = () => {
             // Using stateRef to get current active window without dependency loop issues
             const currentActiveId = stateRef.current.activeWindowId;
 

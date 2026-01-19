@@ -25,7 +25,7 @@ export const BootSplash = () => {
         const updateProgress = () => {
             // Use Performance API to track actual loading
             if (typeof window !== 'undefined' && window.performance) {
-                const entries = performance.getEntriesByType('resource');
+                // Remove unused 'entries'
                 const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
 
                 if (navigation) {
@@ -74,8 +74,10 @@ export const BootSplash = () => {
         );
 
         if (messageIndex !== currentMessageIndex) {
-            setDisplayedText("");
-            setCurrentMessageIndex(messageIndex);
+            setTimeout(() => {
+                setDisplayedText("");
+                setCurrentMessageIndex(messageIndex);
+            }, 0);
         }
     }, [loadProgress, currentMessageIndex]);
 

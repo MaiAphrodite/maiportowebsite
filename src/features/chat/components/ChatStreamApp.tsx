@@ -364,7 +364,7 @@ const ChatSidebar = React.memo(({
                     </div>
                 </div>
 
-                {displayMessages.map((msg: ChatMessage, index: number) => {
+                {displayMessages.map((msg: ChatMessage) => {
                     const isUser = msg.role === 'user';
                     const isLastUserMsg = isUser && msg.id === userMessages[userMessages.length - 1]?.id;
 
