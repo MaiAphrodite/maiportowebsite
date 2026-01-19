@@ -232,43 +232,6 @@ const ChatSidebar = React.memo(({
 }) => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-    // Track keyboard visibility and height using visualViewport
-    useEffect(() => {
-        const viewport = window.visualViewport;
-        if (!viewport) return;
-
-        const handleViewportChange = () => {
-            // Calculate keyboard height from viewport difference
-            const heightDiff = window.innerHeight - viewport.height;
-            const isOpen = heightDiff > 150; // Threshold to detect keyboard
-
-            setIsKeyboardOpen(isOpen);
-            setKeyboardHeight(isOpen ? heightDiff : 0);
-        };
-
-        viewport.addEventListener('resize', handleViewportChange);
-        viewport.addEventListener('scroll', handleViewportChange);
-
-        // Initial check
-        handleViewportChange();
-
-        return () => {
-            viewport.removeEventListener('resize', handleViewportChange);
-            viewport.removeEventListener('scroll', handleViewportChange);
-        };
-    }, []);
-
-    // Scroll messages when keyboard opens
-    useEffect(() => {
-        if (isKeyboardOpen) {
-            setTimeout(() => {
-                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-        }
-    }, [isKeyboardOpen]);
 
     // Helper for pure text extraction
     const getMessageContent = (msg?: ChatMessage) => {
@@ -293,14 +256,55 @@ const ChatSidebar = React.memo(({
             }
         `}>
             {/* Header */}
-            <div className="p-3 border-b-2 border-mai-border flex justify-between items-center">
+            <div className="p-3 border-b-2 border-mai-border flex justify-between items-center shrink-0">
                 <span className="text-mai-text font-semibold flex items-center gap-2">
                     💬 Chat
                 </span>
                 <MoreHorizontal size={16} className="text-mai-subtext" />
             </div>
 
-            {/* Messages */}
+            {/* Mobile: Input at top (below video), Desktop: Input at bottom */}
+            {isCompact && (
+                <div className="px-3 py-2 border-b-2 border-mai-border bg-mai-surface shrink-0">
+                    <form onSubmit={handleSubmit} className="flex gap-2 min-w-0">
+                        <Input
+                            ref={inputRef}
+                            type="text"
+                            value={input}
+                            onChange={handleInputChange}
+                            placeholder={token ? "Say something cute~" : "Verifying..."}
+                            className="flex-1 min-w-0 bg-mai-surface-dim text-mai-text rounded-full px-4 py-2.5 text-sm focus-visible:ring-mai-primary border-2 border-mai-border disabled:opacity-50 placeholder:text-mai-subtext transition-all h-auto"
+                            disabled={!token}
+                        />
+                        <Button
+                            type="submit"
+                            disabled={isLoading || !input.trim() || !token}
+                            variant="default"
+                            size="icon"
+                            className="bg-pink-400 hover:bg-pink-500 text-white rounded-full shrink-0"
+                        >
+                            <Send size={16} />
+                        </Button>
+                        <Button variant="ghost" size="icon" type="button" className="text-mai-subtext hover:text-pink-500 hover:bg-transparent shrink-0">
+                            <Heart size={18} />
+                        </Button>
+                    </form>
+                    {/* Turnstile - Mobile */}
+                    {!token && (
+                        <div className="flex justify-center pt-2">
+                            <Turnstile
+                                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
+                                onSuccess={setToken}
+                                onError={() => setToken(null)}
+                                onExpire={() => setToken(null)}
+                                options={{ theme: 'light', size: 'flexible' }}
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Messages - scrollable */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {/* System welcome */}
                 <div className="flex gap-2 items-start opacity-80">
@@ -334,59 +338,50 @@ const ChatSidebar = React.memo(({
                     </div>
                 )}
                 <div ref={messagesEndRef} />
-                {/* Spacer when keyboard is open to prevent content being hidden */}
-                {isKeyboardOpen && isCompact && <div style={{ height: 60 }} />}
             </div>
 
-            {/* Chat Input - Fixed position when keyboard is open on mobile */}
-            <div
-                className={`px-3 pt-2 border-t-2 border-mai-border bg-mai-surface ${isKeyboardOpen && isCompact
-                    ? 'fixed left-0 right-0 z-50'
-                    : 'relative'
-                    }`}
-                style={{
-                    paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))',
-                    ...(isKeyboardOpen && isCompact ? {
-                        bottom: keyboardHeight,
-                    } : {})
-                }}
-            >
-                <form onSubmit={handleSubmit} className="flex gap-2 min-w-0">
-                    <Input
-                        ref={inputRef}
-                        type="text"
-                        value={input}
-                        onChange={handleInputChange}
-                        placeholder={token ? "Say something cute~" : "Verifying..."}
-                        className="flex-1 min-w-0 bg-mai-surface-dim text-mai-text rounded-full px-4 py-2.5 text-sm focus-visible:ring-mai-primary border-2 border-mai-border disabled:opacity-50 placeholder:text-mai-subtext transition-all h-auto"
-                        disabled={!token}
-                    />
-                    <Button
-                        type="submit"
-                        disabled={isLoading || !input.trim() || !token}
-                        variant="default"
-                        size="icon"
-                        className="bg-pink-400 hover:bg-pink-500 text-white rounded-full shrink-0"
-                    >
-                        <Send size={16} />
-                    </Button>
-                    <Button variant="ghost" size="icon" type="button" className="text-mai-subtext hover:text-pink-500 hover:bg-transparent shrink-0">
-                        <Heart size={18} />
-                    </Button>
-                </form>
-                {/* Turnstile */}
-                {!token && (
-                    <div className="absolute bottom-full left-0 right-0 flex justify-center pb-2 pointer-events-auto">
-                        <Turnstile
-                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
-                            onSuccess={setToken}
-                            onError={() => setToken(null)}
-                            onExpire={() => setToken(null)}
-                            options={{ theme: 'light', size: 'flexible' }}
+            {/* Desktop: Input at bottom */}
+            {!isCompact && (
+                <div className="px-3 pt-2 border-t-2 border-mai-border bg-mai-surface relative"
+                    style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+                >
+                    <form onSubmit={handleSubmit} className="flex gap-2 min-w-0">
+                        <Input
+                            ref={inputRef}
+                            type="text"
+                            value={input}
+                            onChange={handleInputChange}
+                            placeholder={token ? "Say something cute~" : "Verifying..."}
+                            className="flex-1 min-w-0 bg-mai-surface-dim text-mai-text rounded-full px-4 py-2.5 text-sm focus-visible:ring-mai-primary border-2 border-mai-border disabled:opacity-50 placeholder:text-mai-subtext transition-all h-auto"
+                            disabled={!token}
                         />
-                    </div>
-                )}
-            </div>
+                        <Button
+                            type="submit"
+                            disabled={isLoading || !input.trim() || !token}
+                            variant="default"
+                            size="icon"
+                            className="bg-pink-400 hover:bg-pink-500 text-white rounded-full shrink-0"
+                        >
+                            <Send size={16} />
+                        </Button>
+                        <Button variant="ghost" size="icon" type="button" className="text-mai-subtext hover:text-pink-500 hover:bg-transparent shrink-0">
+                            <Heart size={18} />
+                        </Button>
+                    </form>
+                    {/* Turnstile - Desktop */}
+                    {!token && (
+                        <div className="absolute bottom-full left-0 right-0 flex justify-center pb-2 pointer-events-auto">
+                            <Turnstile
+                                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
+                                onSuccess={setToken}
+                                onError={() => setToken(null)}
+                                onExpire={() => setToken(null)}
+                                options={{ theme: 'light', size: 'flexible' }}
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 
