@@ -207,7 +207,7 @@ const StreamFeed = React.memo(({
 
             {/* Subtitles - Gradient stroke style with bounce */}
             {words.length > 0 && (
-                <div className="absolute bottom-12 md:bottom-16 left-1/2 -translate-x-1/2 w-full max-w-[90%] md:max-w-[70%] z-20 flex flex-wrap justify-center gap-x-1.5 gap-y-1">
+                <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[90%] md:max-w-[70%] z-20 flex flex-wrap justify-center gap-x-1.5 gap-y-1">
                     {words.map((word, i) => (
                         <SubtitleWord key={`${i}-${word}`} word={word} />
                     ))}
