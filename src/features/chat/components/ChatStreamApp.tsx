@@ -12,12 +12,10 @@ import { useChatContext } from '@/features/chat/context/ChatContext';
 // Resilient Turnstile Verification Component
 const TurnstileVerification = React.memo(({
     onSuccess,
-    onError,
-    compact = false
+    onError
 }: {
     onSuccess: (token: string) => void;
     onError: () => void;
-    compact?: boolean;
 }) => {
     const [status, setStatus] = useState<'loading' | 'visible' | 'failed' | 'success'>('loading');
     const [mode, setMode] = useState<'invisible' | 'managed'>('invisible');
@@ -136,7 +134,7 @@ const TurnstileVerification = React.memo(({
                             </div>
                             <h3 className="text-lg font-bold text-mai-text">Verification Failed</h3>
                             <p className="text-sm text-mai-subtext">
-                                We couldn't verify you automatically. Please try disabling ad-blockers or using a different browser.
+                                We couldn&apos;t verify you automatically. Please try disabling ad-blockers or using a different browser.
                             </p>
                             <Button
                                 onClick={handleRetry}
@@ -708,7 +706,6 @@ const ChatSidebar = React.memo(({
                             <TurnstileVerification
                                 onSuccess={setToken}
                                 onError={() => setToken(null)}
-                                compact={true}
                             />
                         </div>
                     )}
@@ -798,7 +795,6 @@ const ChatSidebar = React.memo(({
                             <TurnstileVerification
                                 onSuccess={setToken}
                                 onError={() => setToken(null)}
-                                compact={false}
                             />
                         </div>
                     )}
