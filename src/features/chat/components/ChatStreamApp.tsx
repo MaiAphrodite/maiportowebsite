@@ -160,12 +160,15 @@ const TurnstileVerification = React.memo(({
                 onError={handleError}
                 onExpire={handleExpire}
                 options={{
-                    size: mode === 'managed' ? 'flexible' : 'invisible',
+                    size: mode === 'managed' ? 'normal' : 'invisible',
                     theme: 'light',
                     retry: 'auto',
                     retryInterval: 3000
                 }}
             />
+            {/* Height spacer to prevent collapse while loading */}
+            <div className="min-h-[65px]" />
+
             {status === 'loading' && mode === 'managed' && (
                 <div className="flex items-center gap-2 text-mai-subtext text-xs">
                     <RotateCw size={12} className="animate-spin" />
