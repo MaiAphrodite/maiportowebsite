@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useRef, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { TextStreamChatTransport } from 'ai';
 import { maiCharacter } from '@/features/chat/characters';
@@ -39,20 +39,15 @@ export const useChatContext = () => {
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
     const [input, setInput] = useState('');
-    const [token, setToken] = useState<string | null>(null);
+    // Dev bypass: initialize with token if in development
+    const [token, setToken] = useState<string | null>(() =>
+        process.env.NODE_ENV === 'development' ? 'dev-bypass' : null
+    );
     const [showAiReplies, setShowAiReplies] = useState(false);
     const [displayedMessageId, setDisplayedMessageId] = useState<string | null>(null);
     const [displayedText, setDisplayedText] = useState('');
     // Use useState for stable mutable object to avoid "reading ref during render" lint
     const [messageTimestamps] = useState(() => new Map<string, Date>());
-
-    // Dev bypass
-    useEffect(() => {
-        if (process.env.NODE_ENV === 'development') {
-            console.log("Dev mode: Bypassing Turnstile");
-            setToken('dev-bypass');
-        }
-    }, []);
 
     const transport = React.useMemo(() => new TextStreamChatTransport({
         api: '/api/chat',
