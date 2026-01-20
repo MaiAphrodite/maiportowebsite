@@ -97,29 +97,7 @@ const TurnstileVerification = React.memo(({
     // Success state - don't render anything
     if (status === 'success') return null;
 
-    // Failed state - show error and retry button
-    if (status === 'failed') {
-        return (
-            <div className={`flex ${compact ? 'flex-col gap-2' : 'flex-row items-center gap-3'} p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-sm`}>
-                <div className="flex items-center gap-2 text-red-400">
-                    <AlertCircle size={16} />
-                    <span>Verification failed</span>
-                </div>
-                <div className="text-mai-subtext text-xs">
-                    Try disabling ad-blockers or use a different browser
-                </div>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRetry}
-                    className="text-mai-primary hover:bg-mai-primary/10 gap-1"
-                >
-                    <RefreshCw size={14} />
-                    Retry
-                </Button>
-            </div>
-        );
-    }
+
 
     // Loading state for invisible mode - show subtle indicator
     if (status === 'loading' && mode === 'invisible') {
