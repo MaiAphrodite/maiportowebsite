@@ -1,13 +1,181 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { Send, MoreHorizontal, Heart, RotateCw, Maximize2, Eye, EyeOff } from 'lucide-react';
-import { Turnstile } from '@marsidev/react-turnstile';
+import { Send, MoreHorizontal, Heart, RotateCw, Maximize2, Eye, EyeOff, RefreshCw, AlertCircle } from 'lucide-react';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { useDesktopActions, useDesktopState } from '@/features/desktop';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
 import { useChatContext } from '@/features/chat/context/ChatContext';
+
+// Resilient Turnstile Verification Component
+const TurnstileVerification = React.memo(({
+    onSuccess,
+    onError,
+    compact = false
+}: {
+    onSuccess: (token: string) => void;
+    onError: () => void;
+    compact?: boolean;
+}) => {
+    const [status, setStatus] = useState<'loading' | 'visible' | 'failed' | 'success'>('loading');
+    const [mode, setMode] = useState<'invisible' | 'managed'>('invisible');
+    const [retryCount, setRetryCount] = useState(0);
+    const turnstileRef = useRef<TurnstileInstance | null>(null);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
+
+    // Clear timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+    }, []);
+
+    // Start timeout when loading
+    useEffect(() => {
+        if (status === 'loading') {
+            // Clear any existing timeout
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+            // Set timeout: 8 seconds for invisible, 15 for managed
+            const timeoutMs = mode === 'invisible' ? 8000 : 15000;
+            timeoutRef.current = setTimeout(() => {
+                console.warn('[Turnstile] Timeout - widget did not respond');
+                if (mode === 'invisible') {
+                    // Fallback to visible/managed mode
+                    console.log('[Turnstile] Falling back to managed mode');
+                    setMode('managed');
+                    setStatus('visible');
+                    setRetryCount(0);
+                } else {
+                    // Managed mode also timed out
+                    setStatus('failed');
+                }
+            }, timeoutMs);
+        }
+
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+    }, [status, mode, retryCount]);
+
+    const handleSuccess = useCallback((token: string) => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        setStatus('success');
+        onSuccess(token);
+    }, [onSuccess]);
+
+    const handleError = useCallback(() => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        console.warn('[Turnstile] Error occurred');
+
+        if (mode === 'invisible') {
+            // Fallback to managed mode
+            setMode('managed');
+            setStatus('visible');
+            setRetryCount(0);
+        } else {
+            setStatus('failed');
+            onError();
+        }
+    }, [mode, onError]);
+
+    const handleExpire = useCallback(() => {
+        console.warn('[Turnstile] Token expired');
+        setStatus('loading');
+        turnstileRef.current?.reset();
+    }, []);
+
+    const handleRetry = useCallback(() => {
+        setRetryCount(prev => prev + 1);
+        setStatus('loading');
+        turnstileRef.current?.reset();
+    }, []);
+
+    // Success state - don't render anything
+    if (status === 'success') return null;
+
+    // Failed state - show error and retry button
+    if (status === 'failed') {
+        return (
+            <div className={`flex ${compact ? 'flex-col gap-2' : 'flex-row items-center gap-3'} p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-sm`}>
+                <div className="flex items-center gap-2 text-red-400">
+                    <AlertCircle size={16} />
+                    <span>Verification failed</span>
+                </div>
+                <div className="text-mai-subtext text-xs">
+                    Try disabling ad-blockers or use a different browser
+                </div>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRetry}
+                    className="text-mai-primary hover:bg-mai-primary/10 gap-1"
+                >
+                    <RefreshCw size={14} />
+                    Retry
+                </Button>
+            </div>
+        );
+    }
+
+    // Loading state for invisible mode - show subtle indicator
+    if (status === 'loading' && mode === 'invisible') {
+        return (
+            <div className="flex items-center gap-2 text-mai-subtext text-xs py-2">
+                <RotateCw size={12} className="animate-spin" />
+                <span>Verifying...</span>
+                <Turnstile
+                    ref={turnstileRef}
+                    siteKey={siteKey}
+                    onSuccess={handleSuccess}
+                    onError={handleError}
+                    onExpire={handleExpire}
+                    options={{
+                        size: 'invisible',
+                        theme: 'light',
+                        retry: 'auto',
+                        retryInterval: 3000
+                    }}
+                />
+            </div>
+        );
+    }
+
+    // Visible/managed mode - show the actual widget
+    return (
+        <div className="flex flex-col gap-2">
+            {mode === 'managed' && status === 'visible' && (
+                <div className="text-xs text-mai-subtext pb-1">
+                    Please complete the verification below:
+                </div>
+            )}
+            <Turnstile
+                ref={turnstileRef}
+                key={`turnstile-${mode}-${retryCount}`}
+                siteKey={siteKey}
+                onSuccess={handleSuccess}
+                onError={handleError}
+                onExpire={handleExpire}
+                options={{
+                    size: mode === 'managed' ? 'flexible' : 'invisible',
+                    theme: 'light',
+                    retry: 'auto',
+                    retryInterval: 3000
+                }}
+            />
+            {status === 'loading' && mode === 'managed' && (
+                <div className="flex items-center gap-2 text-mai-subtext text-xs">
+                    <RotateCw size={12} className="animate-spin" />
+                    <span>Loading verification...</span>
+                </div>
+            )}
+        </div>
+    );
+});
+TurnstileVerification.displayName = 'TurnstileVerification';
 
 type MessagePart = { type: string; text?: string };
 type ChatMessage = { id: string; role: string; content?: string; parts?: MessagePart[]; createdAt?: Date | number };
@@ -527,12 +695,10 @@ const ChatSidebar = React.memo(({
                     {/* Turnstile - Mobile */}
                     {!token && (
                         <div className="flex justify-center pt-2">
-                            <Turnstile
-                                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
+                            <TurnstileVerification
                                 onSuccess={setToken}
                                 onError={() => setToken(null)}
-                                onExpire={() => setToken(null)}
-                                options={{ theme: 'light', size: 'flexible' }}
+                                compact={true}
                             />
                         </div>
                     )}
@@ -619,12 +785,10 @@ const ChatSidebar = React.memo(({
                     {/* Turnstile - Desktop */}
                     {!token && (
                         <div className="absolute bottom-full left-0 right-0 flex justify-center pb-2 pointer-events-auto">
-                            <Turnstile
-                                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
+                            <TurnstileVerification
                                 onSuccess={setToken}
                                 onError={() => setToken(null)}
-                                onExpire={() => setToken(null)}
-                                options={{ theme: 'light', size: 'flexible' }}
+                                compact={false}
                             />
                         </div>
                     )}
