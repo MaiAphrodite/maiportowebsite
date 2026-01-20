@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Code New Roman';
+  src: url('/fonts/CodeNewRoman.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@layer utilities {
+  .font-code {
+    font-family: 'Code New Roman', monospace;
+  }
+}
+
+
 @theme {
   --color-mai-primary: var(--mai-primary);
   --color-mai-secondary: var(--mai-secondary);
@@ -215,4 +229,22 @@ body {
     padding-right: max(0px, env(safe-area-inset-right));
     padding-bottom: max(0px, env(safe-area-inset-bottom));
   }
+}
+
+/* Terminal Cursor Blink */
+@keyframes blink {
+
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
 }

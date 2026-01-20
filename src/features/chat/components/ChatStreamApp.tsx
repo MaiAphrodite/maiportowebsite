@@ -3,16 +3,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Send, MoreHorizontal, Heart, RotateCw, Maximize2, Eye, EyeOff } from 'lucide-react';
-import { useChat } from '@ai-sdk/react';
-import { TextStreamChatTransport } from 'ai';
-import { maiCharacter } from '@/features/chat/characters';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { useDesktopActions, useDesktopState } from '@/features/desktop';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
+import { useChatContext } from '@/features/chat/context/ChatContext';
 
 type MessagePart = { type: string; text?: string };
-type ChatMessage = { id: string; role: string; content?: string; parts?: MessagePart[] };
+type ChatMessage = { id: string; role: string; content?: string; parts?: MessagePart[]; createdAt?: Date | number };
 
 const SubtitleWord = React.memo(({ word }: { word: string }) => (
     <span
@@ -53,8 +51,13 @@ const StreamFeed = React.memo(({
     latestAssistantMessage: ChatMessage | undefined,
     isCompact: boolean
 }) => {
-    const [displayedText, setDisplayedText] = useState('');
-    const [lastProcessedId, setLastProcessedId] = useState<string | null>(null);
+    // Use context state for persistence across remounts
+    const {
+        displayedMessageId,
+        setDisplayedMessageId,
+        displayedText,
+        setDisplayedText,
+    } = useChatContext();
 
     // Filter message text logic
     const getMessageContent = (msg?: ChatMessage) => {
@@ -154,13 +157,13 @@ const StreamFeed = React.memo(({
             if (displayedText !== '') setDisplayedText('');
             return;
         }
-        if (latestAssistantMessage.id !== lastProcessedId) {
+        if (latestAssistantMessage.id !== displayedMessageId) {
             setDisplayedText('');
-            setLastProcessedId(latestAssistantMessage.id);
+            setDisplayedMessageId(latestAssistantMessage.id);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
             isTypingRef.current = false;
         }
-    }, [latestAssistantMessage, lastProcessedId, displayedText]);
+    }, [latestAssistantMessage, displayedMessageId, displayedText, setDisplayedMessageId, setDisplayedText]);
 
     // Typing Loops
     useEffect(() => { advanceTyping(); }, [displayedText, advanceTyping]);
@@ -219,10 +222,19 @@ const StreamFeed = React.memo(({
 
 StreamFeed.displayName = 'StreamFeed';
 
+// Helper to format timestamp
+const formatTimestamp = (date?: Date | number) => {
+    if (!date) return '';
+    const d = typeof date === 'number' ? new Date(date) : date;
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
 // Sub-component: Chat Sidebar (Static during typing)
 const ChatSidebar = React.memo(({
+    allMessages,
     userMessages,
     aiMessages,
+    messageTimestamps,
     status,
     isLoading,
     token,
@@ -234,8 +246,10 @@ const ChatSidebar = React.memo(({
     showAiReplies,
     setShowAiReplies
 }: {
+    allMessages: ChatMessage[],
     userMessages: ChatMessage[],
     aiMessages: ChatMessage[],
+    messageTimestamps: Map<string, Date>,
     status: string,
     isLoading: boolean,
     token: string | null,
@@ -261,9 +275,10 @@ const ChatSidebar = React.memo(({
         return '';
     };
 
-    // Combine and sort messages if showing AI replies
+    // Use original messages array order - SDK maintains proper interleaving
+    // Filter to get all messages except welcome, or just user messages if AI hidden
     const displayMessages = showAiReplies
-        ? [...userMessages, ...aiMessages].sort((a, b) => a.id.localeCompare(b.id))
+        ? allMessages.filter((m: ChatMessage) => m.id !== 'welcome')
         : userMessages;
 
     useEffect(() => {
@@ -379,6 +394,9 @@ const ChatSidebar = React.memo(({
                                     <span className={`text-xs font-semibold ${isUser ? 'text-mai-secondary' : 'text-mai-primary'}`}>
                                         {isUser ? 'You' : 'Mai'}
                                     </span>
+                                    <span className="text-[10px] text-mai-subtext opacity-60">
+                                        {formatTimestamp(messageTimestamps.get(msg.id))}
+                                    </span>
                                     {status === 'submitted' && isLastUserMsg && (
                                         <RotateCw size={12} className="text-mai-subtext animate-spin" />
                                     )}
@@ -449,46 +467,20 @@ const ChatSidebar = React.memo(({
 ChatSidebar.displayName = 'ChatSidebar';
 
 export const ChatStreamApp = () => {
-    const [input, setInput] = useState('');
-    const [token, setToken] = useState<string | null>(null);
-    const tokenRef = useRef<string | null>(null);
-
-    useEffect(() => { tokenRef.current = token; }, [token]);
-    useEffect(() => {
-        if (process.env.NODE_ENV === 'development') {
-            console.log("Dev mode: Bypassing Turnstile");
-            setToken('dev-bypass');
-        }
-    }, []);
-
-    // eslint-disable-next-line react-hooks/refs
-    const transport = React.useMemo(() => new TextStreamChatTransport({
-        api: '/api/chat',
-        prepareSendMessagesRequest: async ({ messages: msgs, ...rest }) => {
-            const currentToken = tokenRef.current;
-            console.log("Sending message with token:", currentToken ? currentToken.slice(0, 10) + "..." : "null");
-            const transformedMessages = msgs.map((msg: ChatMessage) => {
-                let content = msg.content;
-                if (!content && msg.parts) {
-                    content = msg.parts.filter((p: MessagePart) => p.type === 'text').map((p: MessagePart) => p.text).join('');
-                }
-                return { role: msg.role, content: content || '' };
-            });
-            return { ...rest, body: { messages: transformedMessages, token: currentToken } };
-        }
-    }), []); // Dependencies intentionally empty, we read tokenRef late
-
-    const { messages, sendMessage, status } = useChat({
-        transport,
-        initialMessages: [{ id: 'welcome', role: 'assistant', content: maiCharacter.greeting }],
-        onError: (err: Error) => {
-            if (err.message.includes('401') || err.message.toLowerCase().includes('unauthorized')) {
-                setToken(null);
-            }
-        }
-    } as Parameters<typeof useChat>[0]);
-
-    const isLoading = status === 'streaming' || status === 'submitted';
+    // Get all chat state from context (persisted globally)
+    const {
+        messages,
+        sendMessage,
+        status,
+        isLoading,
+        input,
+        setInput,
+        token,
+        setToken,
+        messageTimestamps,
+        showAiReplies,
+        setShowAiReplies,
+    } = useChatContext();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => { setInput(e.target.value); };
     const handleSubmit = async (e: React.FormEvent) => {
@@ -500,7 +492,7 @@ export const ChatStreamApp = () => {
     const userMessages = messages.filter((m: ChatMessage) => m.role === 'user');
     const aiMessages = messages.filter((m: ChatMessage) => m.role === 'assistant' && m.id !== 'welcome');
     const latestAssistantMessage = [...messages].reverse().find((m: ChatMessage) => m.role === 'assistant');
-    const [showAiReplies, setShowAiReplies] = useState(false);
+
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [isCompact, setIsCompact] = useState(false);
@@ -559,8 +551,10 @@ export const ChatStreamApp = () => {
                 />
 
                 <ChatSidebar
+                    allMessages={messages}
                     userMessages={userMessages}
                     aiMessages={aiMessages}
+                    messageTimestamps={messageTimestamps}
                     status={status}
                     isLoading={isLoading}
                     token={token}
