@@ -155,7 +155,6 @@ const StreamFeed = React.memo(({
     // Watch for new messages
     useEffect(() => {
         if (!latestAssistantMessage) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             if (displayedText !== '') setDisplayedText('');
             return;
         }
