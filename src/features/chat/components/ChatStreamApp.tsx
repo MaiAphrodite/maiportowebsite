@@ -124,9 +124,8 @@ const StreamFeed = React.memo(({
     const playDialogueSound = (word: string) => {
         try {
             if (!audioContextRef.current) {
-                // @ts-ignore
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                audioContextRef.current = new AudioContext();
+                // @ts-expect-error - webkitAudioContext for Safari compatibility
+                audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
             }
             const ctx = audioContextRef.current;
             if (ctx.state === 'suspended') ctx.resume();
@@ -323,7 +322,7 @@ const StreamFeed = React.memo(({
             // Trigger next word immediately after this one finishes
             // This ensures continuous typing even if useEffect doesn't trigger
         }, delay);
-    }, [setDisplayedText]); // Using Ref for logic state, but setDisplayedText is from context
+    }, [setDisplayedText, playDialogueSound]); // playDialogueSound is stable (defined in component scope)
 
     // Watch for new messages
     useEffect(() => {
