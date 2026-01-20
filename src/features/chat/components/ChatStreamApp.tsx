@@ -95,8 +95,46 @@ const StreamFeed = React.memo(({
     useEffect(() => { displayedTextRef.current = displayedText; }, [displayedText]);
 
     // Sound Logic
+    // Sound Logic - Advanced Web Audio API
+    // Using a ref to keep one context alive (lazy init)
+    const audioContextRef = useRef<AudioContext | null>(null);
+
+    // Helper: Create Reverb Impulse
+    const createReverbImpulse = (ctx: AudioContext) => {
+        const duration = 0.5; // Short tail (0.5s)
+        const decay = 2.0;
+        const rate = ctx.sampleRate;
+        const length = rate * duration;
+        const impulse = ctx.createBuffer(2, length, rate);
+        const left = impulse.getChannelData(0);
+        const right = impulse.getChannelData(1);
+
+        for (let i = 0; i < length; i++) {
+            // White noise with exponential decay
+            const mul = Math.pow(1 - i / length, decay);
+            left[i] = (Math.random() * 2 - 1) * mul;
+            right[i] = (Math.random() * 2 - 1) * mul;
+        }
+        return impulse;
+    };
+
+    // Cache the reverb buffer
+    const reverbBufferRef = useRef<AudioBuffer | null>(null);
+
     const playDialogueSound = (word: string) => {
         try {
+            if (!audioContextRef.current) {
+                // @ts-expect-error - webkitAudioContext for Safari compatibility
+                audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            const ctx = audioContextRef.current;
+            if (ctx.state === 'suspended') ctx.resume();
+
+            // Lazy generate reverb buffer once
+            if (!reverbBufferRef.current) {
+                reverbBufferRef.current = createReverbImpulse(ctx);
+            }
+
             let min = 1;
             let max = 10;
             if (/[?!]/.test(word)) { min = 21; max = 30; }
@@ -104,11 +142,107 @@ const StreamFeed = React.memo(({
             else { min = 1; max = 10; }
 
             const fileIndex = Math.floor(Math.random() * (max - min + 1)) + min;
-            const fileName = `bleep${String(fileIndex).padStart(3, '0')}.ogg`;
+            const fileName = `bleep${String(fileIndex).padStart(3, '0')}.opus`;
 
-            const audio = new Audio(`/sounds/dialogue/${fileName}`);
-            audio.volume = 0.7;
-            audio.play().catch(() => { });
+            fetch(`/sounds/dialogue/${fileName}`)
+                .then(response => response.arrayBuffer())
+                .then(arrayBuffer => ctx.decodeAudioData(arrayBuffer))
+                .then(audioBuffer => {
+                    // Node Structure:
+                    // Source -> Gain -> Panner -> Filter -> [Dry/Wet Split]
+                    //                                   |-> Destination (Dry)
+                    //                                   |-> Convolver (Reverb) -> Destination (Wet)
+
+                    const source = ctx.createBufferSource();
+                    source.buffer = audioBuffer;
+
+                    const gainNode = ctx.createGain();
+                    const pannerNode = ctx.createStereoPanner();
+                    const filterNode = ctx.createBiquadFilter(); // Warmth LPF
+                    const convolverNode = ctx.createConvolver(); // Reverb
+                    const reverbGainNode = ctx.createGain();     // Reverb Level
+
+                    // 1. Configure Nodes
+                    filterNode.type = 'lowpass';
+                    filterNode.frequency.value = 8000; // Brighten: Open up to 8kHz (was 3.5k)
+                    filterNode.Q.value = 0.7;
+
+                    convolverNode.buffer = reverbBufferRef.current;
+                    reverbGainNode.gain.value = 0.15; // Tighten: Reduce reverb wash (was 0.25)
+
+                    // 2. Connect Graph
+                    source.connect(gainNode);
+                    gainNode.connect(pannerNode);
+                    pannerNode.connect(filterNode);
+
+                    // Dry Path
+                    filterNode.connect(ctx.destination);
+
+                    // Wet Path (Reverb)
+                    filterNode.connect(convolverNode);
+                    convolverNode.connect(reverbGainNode);
+                    reverbGainNode.connect(ctx.destination);
+
+                    // 3. Settings (Pitch, Pan, Volume)
+                    const lengthFactor = word.length < 4 ? 0.1 : 0;
+                    const randomJitter = (Math.random() * 0.3) - 0.1;
+
+                    // Intonation Logic (Prosody)
+                    let pitchMod = 0;
+                    const isEndOfSentence = /[.!]$/.test(word);
+                    const isQuestion = /[?]$/.test(word);
+                    const isComma = /[,;:]$/.test(word);
+
+                    if (isEndOfSentence) pitchMod = -0.3;
+                    if (isQuestion) pitchMod = 0.35;
+                    if (isComma) pitchMod = 0.1;
+
+                    // Pitch Ceiling: Clamp to prevent squeaky sounds
+                    let basePitch = 1.2 + lengthFactor + randomJitter + pitchMod;
+                    basePitch = Math.max(0.85, Math.min(basePitch, 1.55)); // Clamp 0.85 - 1.55
+
+                    source.playbackRate.value = basePitch;
+
+                    // Stereo Drift: Smooth oscillation (sine wave based on time)
+                    const driftSpeed = 0.5; // Cycles per second
+                    const driftAmount = 0.35; // Max pan (-0.35 to +0.35)
+                    const timeSec = Date.now() / 1000;
+                    const panValue = Math.sin(timeSec * driftSpeed * Math.PI * 2) * driftAmount;
+                    pannerNode.pan.value = panValue;
+
+                    // 4. Envelopes (Roundness) + Emphasis
+                    const now = ctx.currentTime;
+                    gainNode.gain.setValueAtTime(0, now);
+
+                    // Emphasis: Louder for long/important words, quieter for short filler words
+                    const fillerWords = ['the', 'a', 'an', 'is', 'are', 'was', 'were', 'to', 'of', 'and', 'in', 'it', 'for', 'on', 'with'];
+                    const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
+                    let emphasisVol = 0.5;
+                    if (fillerWords.includes(cleanWord)) {
+                        emphasisVol = 0.35; // Quieter filler
+                    } else if (word.length > 6) {
+                        emphasisVol = 0.6; // Louder important words
+                    }
+                    emphasisVol += (Math.random() * 0.1); // Jitter
+
+                    gainNode.gain.linearRampToValueAtTime(emphasisVol, now + 0.002);
+
+                    // 5. Duration Matching: Bleep length scales with word length
+                    // Short words = quick blip, long words = extended sound
+                    const minDuration = 0.08; // 80ms minimum
+                    const maxDuration = 0.35; // 350ms maximum
+                    const msPerChar = 0.025;  // 25ms per character
+                    let targetDuration = minDuration + (cleanWord.length * msPerChar);
+                    targetDuration = Math.max(minDuration, Math.min(targetDuration, maxDuration));
+
+                    // Fade out envelope matches target duration
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + targetDuration);
+
+                    source.start(now);
+                    source.stop(now + targetDuration + 0.02); // Stop slightly after fade completes
+                })
+                .catch(() => { });
+
         } catch (_) { // eslint-disable-line @typescript-eslint/no-unused-vars
         }
     };
@@ -137,7 +271,45 @@ const StreamFeed = React.memo(({
         isTypingRef.current = true;
         const nextWordIndex = displayedWords.length;
         const nextWord = fullWords[nextWordIndex] || '';
-        const delay = 70 + (nextWord.length * 25);
+
+        // Base delay per word length
+        let delay = 70 + (nextWord.length * 25);
+
+        // Sentence Cadence: Slow at start/end, faster in middle
+        // Find sentence boundaries
+        let sentenceStart = 0;
+        for (let i = nextWordIndex - 1; i >= 0; i--) {
+            if (/[.!?]$/.test(fullWords[i])) {
+                sentenceStart = i + 1;
+                break;
+            }
+        }
+        let sentenceEnd = fullWords.length - 1;
+        for (let i = nextWordIndex; i < fullWords.length; i++) {
+            if (/[.!?]$/.test(fullWords[i])) {
+                sentenceEnd = i;
+                break;
+            }
+        }
+        const sentenceLength = sentenceEnd - sentenceStart + 1;
+        const posInSentence = nextWordIndex - sentenceStart;
+        const sentenceProgress = sentenceLength > 1 ? posInSentence / (sentenceLength - 1) : 0.5;
+
+        // Parabola: slowest at 0 and 1, fastest at 0.5
+        // cadenceMod ranges from 0.8 (fast mid) to 1.2 (slow edges)
+        const cadenceMod = 0.8 + 0.4 * Math.abs(sentenceProgress - 0.5) * 2;
+        delay = delay * cadenceMod;
+
+        // Rhythm Jitter: Randomize delay by +/- 15%
+        const jitter = 1 + ((Math.random() * 0.3) - 0.15);
+        delay = delay * jitter;
+
+        // Punctuation Pauses (The "Breath")
+        // Fix: Check PREVIOUS word to pause *after* it, not *before* the current word.
+        const prevWord = fullWords[nextWordIndex - 1] || '';
+
+        if (/[,;:]$/.test(prevWord)) delay += 150; // Pause after comma
+        if (/[.!?]$/.test(prevWord)) delay += 300; // Pause after sentence end
 
         timeoutRef.current = setTimeout(() => {
             const newText = fullWords.slice(0, nextWordIndex + 1).join(' ');
@@ -150,7 +322,7 @@ const StreamFeed = React.memo(({
             // Trigger next word immediately after this one finishes
             // This ensures continuous typing even if useEffect doesn't trigger
         }, delay);
-    }, [setDisplayedText]); // Using Ref for logic state, but setDisplayedText is from context
+    }, [setDisplayedText, playDialogueSound]); // playDialogueSound is stable (defined in component scope)
 
     // Watch for new messages
     useEffect(() => {
