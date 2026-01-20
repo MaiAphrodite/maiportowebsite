@@ -144,39 +144,68 @@ const TurnstileVerification = React.memo(({
         );
     }
 
-    // Visible/managed mode - show the actual widget
-    return (
-        <div className="flex flex-col gap-2">
-            {mode === 'managed' && status === 'visible' && (
-                <div className="text-xs text-mai-subtext pb-1">
-                    Please complete the verification below:
-                </div>
-            )}
-            <Turnstile
-                ref={turnstileRef}
-                key={`turnstile-${mode}-${retryCount}`}
-                siteKey={siteKey}
-                onSuccess={handleSuccess}
-                onError={handleError}
-                onExpire={handleExpire}
-                options={{
-                    size: mode === 'managed' ? 'normal' : 'invisible',
-                    theme: 'light',
-                    retry: 'auto',
-                    retryInterval: 3000
-                }}
-            />
-            {/* Height spacer to prevent collapse while loading */}
-            <div className="min-h-[65px]" />
+    // Modal/Visible Mode (Managed)
+    // Covers 'visible', 'failed', and 'loading' (during retry)
+    if (mode === 'managed') {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                <div className="bg-mai-surface border-2 border-mai-border rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 flex flex-col items-center gap-4 text-center animate-in zoom-in-95 duration-200">
 
-            {status === 'loading' && mode === 'managed' && (
-                <div className="flex items-center gap-2 text-mai-subtext text-xs">
-                    <RotateCw size={12} className="animate-spin" />
-                    <span>Loading verification...</span>
+                    {status === 'failed' ? (
+                        <>
+                            <div className="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center mb-2">
+                                <AlertCircle size={24} />
+                            </div>
+                            <h3 className="text-lg font-bold text-mai-text">Verification Failed</h3>
+                            <p className="text-sm text-mai-subtext">
+                                We couldn't verify you automatically. Please try disabling ad-blockers or using a different browser.
+                            </p>
+                            <Button
+                                onClick={handleRetry}
+                                className="mt-2 w-full bg-mai-primary text-white hover:bg-mai-primary/90"
+                            >
+                                <RefreshCw size={16} className="mr-2" />
+                                Try Again
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <div className="w-12 h-12 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center mb-2">
+                                {status === 'loading' ? (
+                                    <RotateCw size={24} className="animate-spin text-pink-500" />
+                                ) : (
+                                    <span className="text-2xl">🛡️</span>
+                                )}
+                            </div>
+                            <h3 className="text-lg font-bold text-mai-text">Security Check</h3>
+                            <p className="text-sm text-mai-subtext mb-2">
+                                Please complete the verification below to continue chatting.
+                            </p>
+
+                            <div className="min-h-[65px] flex justify-center w-full overflow-hidden relative">
+                                <Turnstile
+                                    ref={turnstileRef}
+                                    key={`turnstile-${mode}-${retryCount}`}
+                                    siteKey={siteKey}
+                                    onSuccess={handleSuccess}
+                                    onError={handleError}
+                                    onExpire={handleExpire}
+                                    options={{
+                                        size: 'normal',
+                                        theme: 'light',
+                                        retry: 'auto',
+                                        retryInterval: 3000
+                                    }}
+                                />
+                            </div>
+                        </>
+                    )}
                 </div>
-            )}
-        </div>
-    );
+            </div>
+        );
+    }
+
+    return null; // Fallback for any other state
 });
 TurnstileVerification.displayName = 'TurnstileVerification';
 
