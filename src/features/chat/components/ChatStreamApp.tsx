@@ -147,8 +147,10 @@ const StreamFeed = React.memo(({
 
             // Trigger next word immediately after this one finishes
             // This ensures continuous typing even if useEffect doesn't trigger
+            // Trigger next word immediately after this one finishes
+            // This ensures continuous typing even if useEffect doesn't trigger
         }, delay);
-    }, []); // Empty dependencies as it uses Refs for all state
+    }, [setDisplayedText]); // Using Ref for logic state, but setDisplayedText is from context
 
     // Watch for new messages
     useEffect(() => {
@@ -233,7 +235,6 @@ const formatTimestamp = (date?: Date | number) => {
 const ChatSidebar = React.memo(({
     allMessages,
     userMessages,
-    aiMessages,
     messageTimestamps,
     status,
     isLoading,
@@ -248,7 +249,6 @@ const ChatSidebar = React.memo(({
 }: {
     allMessages: ChatMessage[],
     userMessages: ChatMessage[],
-    aiMessages: ChatMessage[],
     messageTimestamps: Map<string, Date>,
     status: string,
     isLoading: boolean,
@@ -490,7 +490,6 @@ export const ChatStreamApp = () => {
     };
 
     const userMessages = messages.filter((m: ChatMessage) => m.role === 'user');
-    const aiMessages = messages.filter((m: ChatMessage) => m.role === 'assistant' && m.id !== 'welcome');
     const latestAssistantMessage = [...messages].reverse().find((m: ChatMessage) => m.role === 'assistant');
 
 
@@ -553,7 +552,7 @@ export const ChatStreamApp = () => {
                 <ChatSidebar
                     allMessages={messages}
                     userMessages={userMessages}
-                    aiMessages={aiMessages}
+                    // aiMessages={aiMessages} // Unused as we filter in ChatSidebar
                     messageTimestamps={messageTimestamps}
                     status={status}
                     isLoading={isLoading}

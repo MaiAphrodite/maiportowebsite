@@ -1,11 +1,12 @@
 import { Dispatch, SetStateAction } from 'react';
+import { WindowState } from '@/features/desktop/context/DesktopContext';
 
 export type TerminalOutput = string | { text: string; delay?: number };
 
 export interface CommandContext {
     args: string[];
     setLines: Dispatch<SetStateAction<string[]>>;
-    openWindow: (window: any) => void;
+    openWindow: (window: Partial<WindowState> & { id: string }) => void;
     clearTerminal: () => void;
 }
 

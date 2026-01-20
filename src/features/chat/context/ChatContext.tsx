@@ -44,7 +44,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     const [displayedMessageId, setDisplayedMessageId] = useState<string | null>(null);
     const [displayedText, setDisplayedText] = useState('');
     const tokenRef = useRef<string | null>(null);
-    const messageTimestampsRef = useRef<Map<string, Date>>(new Map());
+    // Use useState for stable mutable object to avoid "reading ref during render" lint
+    const [messageTimestamps] = useState(() => new Map<string, Date>());
 
     useEffect(() => { tokenRef.current = token; }, [token]);
 
@@ -88,11 +89,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     // Track timestamps
     useEffect(() => {
         messages.forEach(msg => {
-            if (!messageTimestampsRef.current.has(msg.id)) {
-                messageTimestampsRef.current.set(msg.id, new Date());
+            if (!messageTimestamps.has(msg.id)) {
+                messageTimestamps.set(msg.id, new Date());
             }
         });
-    }, [messages]);
+    }, [messages, messageTimestamps]);
 
     const wrappedSendMessage = useCallback(async (params: { text: string }) => {
         await sendMessage(params);
@@ -107,7 +108,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         setInput,
         token,
         setToken,
-        messageTimestamps: messageTimestampsRef.current,
+        messageTimestamps,
         showAiReplies,
         setShowAiReplies,
         displayedMessageId,
