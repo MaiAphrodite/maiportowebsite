@@ -96,15 +96,26 @@ export function useTTS({ onReady, onError, onProgress, onSpeakStart }: UseTTSOpt
             return;
         }
 
+        const MAX_WAIT_MS = 3000; // Max wait for a slot to become ready
+        const POLL_INTERVAL_MS = 50; // How often to check for ready slot
+
         while (true) {
             const expectedId = nextExpectedIdRef.current;
             const slotIndex = expectedId % SLOT_COUNT;
 
-            // Check if there's anything to play
-            const status = ringBuffer.getStatus(slotIndex);
+            // Wait for slot to become ready (with timeout)
+            let waited = 0;
+            let status = ringBuffer.getStatus(slotIndex);
+
+            while (status !== SLOT_READY && waited < MAX_WAIT_MS) {
+                await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+                waited += POLL_INTERVAL_MS;
+                status = ringBuffer.getStatus(slotIndex);
+            }
+
+            // If still not ready after waiting, exit loop
             if (status !== SLOT_READY) {
-                // No more audio ready, exit loop
-                // console.log(`[TTS] Playback loop: Slot ${slotIndex} not ready (status ${status}), pausing`);
+                console.log(`[TTS] Slot ${slotIndex} not ready after ${waited}ms, ending playback loop`);
                 break;
             }
 
