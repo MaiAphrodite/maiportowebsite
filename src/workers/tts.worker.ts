@@ -23,7 +23,7 @@ const VOICE_ID = 'en_US-hfc_female-medium';
 const MODEL_BASE = 'https://huggingface.co/diffusionstudio/piper-voices/resolve/main/en/en_US/hfc_female/medium';
 const PIPER_BASE = 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.wasm';
 // ONNX Runtime Web files from CDN
-const ONNX_WASM_PATH = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/';
+const ONNX_WASM_PATH = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.2/dist/';
 
 // State
 let session: PiperSession | null = null;
