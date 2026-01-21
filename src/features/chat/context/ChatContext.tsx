@@ -60,6 +60,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }, [token]);
 
     // Transport is stable (no token dependency) - uses tokenRef.current instead
+    // The ref is accessed inside prepareSendMessagesRequest callback, not during render
+    // eslint-disable-next-line react-hooks/refs
     const transport = React.useMemo(() => new TextStreamChatTransport({
         api: '/api/chat',
         prepareSendMessagesRequest: async ({ messages: msgs, ...rest }) => {
@@ -74,7 +76,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
             });
             return { ...rest, body: { messages: transformedMessages, token: currentToken } };
         }
-    }), []);  // No dependencies - transport is stable, tokenRef always has current value
+    }), []);
 
     const { messages, sendMessage, status } = useChat({
         id: 'mai-stream-chat',
