@@ -1,6 +1,5 @@
 import * as ort from 'onnxruntime-web';
 import { createPiperPhonemize } from './piperPhonemize.js';
-import type { PiperPhonemizer } from './piperPhonemize.js';
 
 export interface PiperSessionConfig {
     voiceId: string;
@@ -13,7 +12,7 @@ export interface PiperSessionConfig {
 
 export class PiperSession {
     private session: ort.InferenceSession | null = null;
-    private phonemizer: PiperPhonemizer | null = null;
+    private createPiperPhonemize: any = null;
     private config: PiperSessionConfig;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private modelConfig: any = null;
@@ -30,23 +29,10 @@ export class PiperSession {
         ort.env.wasm.wasmPaths = this.config.onnxWasmPath;
         ort.env.allowLocalModels = false; // We fetch manually
 
-        // 2. Initialize Phonemizer
+        // 2. Load Phonemizer Factory
         this.log('Loading Phonemizer...');
-        const wasmPath = this.config.wasmPath.endsWith('.wasm')
-            ? this.config.wasmPath
-            : `${this.config.wasmPath}/piper_phonemize.wasm`;
-
-        this.phonemizer = await createPiperPhonemize({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            print: (data: any) => this.log(`[Phonemize] ${data}`),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            printErr: (data: any) => console.error(`[Phonemize] ${data}`),
-            locateFile: (url: string) => {
-                if (url.endsWith('.wasm')) return wasmPath;
-                if (url.endsWith('.data')) return wasmPath.replace('.wasm', '.data');
-                return url;
-            }
-        });
+        this.createPiperPhonemize = createPiperPhonemize;
+        this.log('Phonemizer Factory loaded.');
 
         // 3. Load Model Config
         this.log(`Loading Model Config: ${this.config.modelConfigPath}`);
@@ -70,12 +56,12 @@ export class PiperSession {
     }
 
     async synthesize(text: string): Promise<Int16Array> {
-        if (!this.session || !this.phonemizer || !this.modelConfig) {
+        if (!this.session || !this.createPiperPhonemize || !this.modelConfig) {
             throw new Error('PiperSession not initialized');
         }
 
         // 1. Phonemize
-        const phonemeIds = await this.phonemize(text);
+        const phonemeIds = await this.getPhonemeIds(text);
 
         // 2. Inference
         const audio = await this.runInference(phonemeIds);
@@ -83,10 +69,47 @@ export class PiperSession {
         return audio;
     }
 
-    private async phonemize(text: string): Promise<number[]> {
-        if (!this.phonemizer) throw new Error('Phonemizer null');
-        const result = this.phonemizer.phonemize(text, this.modelConfig.es_speak_phonemes);
-        return result.phoneme_ids;
+    private async getPhonemeIds(text: string): Promise<number[]> {
+        return new Promise(async (resolve, reject) => {
+            const wasmPath = this.config.wasmPath.endsWith('.wasm')
+                ? this.config.wasmPath
+                : `${this.config.wasmPath}/piper_phonemize.wasm`;
+
+            const module = await this.createPiperPhonemize({
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                print: (data: any) => {
+                    try {
+                        const json = JSON.parse(data);
+                        if (json.phoneme_ids) {
+                            resolve(json.phoneme_ids);
+                        }
+                    } catch (e) {
+                        // Ignore non-JSON output
+                    }
+                },
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                printErr: (msg: any) => {
+                    // console.warn('Piper Phonemize Stderr:', msg);
+                },
+                locateFile: (url: string) => {
+                    if (url.endsWith('.wasm')) return wasmPath;
+                    if (url.endsWith('.data')) return wasmPath.replace('.wasm', '.data');
+                    return url;
+                }
+            });
+
+            const config = this.modelConfig;
+            const input = JSON.stringify([{ text: text.trim() }]);
+
+            module.callMain([
+                '-l',
+                config.espeak.voice,
+                '--input',
+                input,
+                '--espeak_data',
+                '/espeak-ng-data'
+            ]);
+        });
     }
 
     private async runInference(phonemeIds: number[]): Promise<Int16Array> {
