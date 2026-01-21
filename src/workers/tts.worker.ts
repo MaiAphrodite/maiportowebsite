@@ -4,7 +4,7 @@
 // This intercepts ONNX InferenceSession.create to add WebGPU execution provider
 import * as ort from 'onnxruntime-web';
 
-let webgpuAvailable = false;
+
 
 // Check WebGPU availability and patch ONNX
 async function setupWebGPU() {
@@ -13,7 +13,6 @@ async function setupWebGPU() {
         if (typeof navigator !== 'undefined' && 'gpu' in navigator) {
             const adapter = await (navigator as unknown as { gpu: { requestAdapter: () => Promise<unknown> } }).gpu.requestAdapter();
             if (adapter) {
-                webgpuAvailable = true;
                 console.log('[TTS Worker] WebGPU available - will use GPU acceleration');
 
                 // Monkey-patch InferenceSession.create to add WebGPU provider
@@ -42,7 +41,7 @@ async function setupWebGPU() {
 const webgpuReady = setupWebGPU();
 
 import { TtsSession } from '@mintplex-labs/piper-tts-web';
-import { RingBufferView, SLOT_FILLING } from '../lib/tts/RingBuffer';
+import { RingBufferView } from '../lib/tts/RingBuffer';
 
 // Message types
 interface TTSRequest {

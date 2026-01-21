@@ -50,6 +50,126 @@ export function useTTS({ onReady, onError, onProgress, onSpeakStart }: UseTTSOpt
     // Check for SharedArrayBuffer support
     const sabSupportedRef = useRef(typeof SharedArrayBuffer !== 'undefined');
 
+    // Play audio from Uint8Array (WAV data)
+    const playAudioFromUint8Array = useCallback((data: Uint8Array): Promise<void> => {
+        return new Promise((resolve, reject) => {
+            try {
+                // Copy data to a regular ArrayBuffer (SAB-backed arrays can't be used directly as BlobPart)
+                const buffer = new ArrayBuffer(data.length);
+                const view = new Uint8Array(buffer);
+                view.set(data);
+
+                const blob = new Blob([buffer], { type: 'audio/wav' });
+                const url = URL.createObjectURL(blob);
+                const audio = new Audio(url);
+                audioRef.current = audio;
+
+                audio.onended = () => {
+                    URL.revokeObjectURL(url);
+                    resolve();
+                };
+
+                audio.onerror = (e) => {
+                    URL.revokeObjectURL(url);
+                    reject(e);
+                };
+
+                audio.play().catch(reject);
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }, []);
+
+    // Playback loop: waits for slots in order and plays them
+    const startPlaybackLoop = useCallback(async () => {
+        if (playbackLoopActiveRef.current) return;
+        playbackLoopActiveRef.current = true;
+        setIsSpeaking(true);
+
+        console.log('[TTS] Playback loop started');
+
+        const ringBuffer = ringBufferRef.current;
+        if (!ringBuffer) {
+            playbackLoopActiveRef.current = false;
+            setIsSpeaking(false);
+            return;
+        }
+
+        while (true) {
+            const expectedId = nextExpectedIdRef.current;
+            const slotIndex = expectedId % SLOT_COUNT;
+
+            // Check if there's anything to play
+            const status = ringBuffer.getStatus(slotIndex);
+            if (status !== SLOT_READY) {
+                // No more audio ready, exit loop
+                // console.log(`[TTS] Playback loop: Slot ${slotIndex} not ready (status ${status}), pausing`);
+                break;
+            }
+
+            // Read audio from slot
+            const audioData = ringBuffer.readSlot(slotIndex);
+            const text = sentenceTextMapRef.current.get(expectedId) || '';
+
+            console.log(`[TTS] Playing ID ${expectedId} from Slot ${slotIndex} (${audioData.length} bytes)`);
+
+            // Trigger callback
+            if (text) {
+                setSpokenText(text);
+                callbacksRef.current.onSpeakStart?.(text);
+            }
+
+            // Play audio if we have data
+            if (audioData.length > 0) {
+                isPlayingRef.current = true;
+                try {
+                    await playAudioFromUint8Array(audioData);
+                } catch (e) {
+                    console.error('[TTS] Playback error:', e);
+                }
+                isPlayingRef.current = false;
+            } else {
+                // Empty audio (filtered text) - minimal pause
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+
+            // Free slot and advance
+            ringBuffer.freeSlot(slotIndex);
+            sentenceTextMapRef.current.delete(expectedId);
+            nextExpectedIdRef.current++;
+        }
+
+        playbackLoopActiveRef.current = false;
+        setIsSpeaking(false);
+        console.log('[TTS] Playback loop ended');
+    }, [playAudioFromUint8Array]);
+
+    // Fallback for browsers without SAB
+    const initFallbackMode = useCallback(() => {
+        const worker = new Worker(new URL('../workers/tts.worker.ts', import.meta.url));
+
+        worker.onmessage = (event: MessageEvent<TTSResponse>) => {
+            const { isReady: ready, error, downloadProgress } = event.data;
+
+            if (ready) {
+                setIsReady(true);
+                callbacksRef.current.onReady?.();
+            }
+
+            if (downloadProgress !== undefined) {
+                callbacksRef.current.onProgress?.(downloadProgress);
+            }
+
+            if (error) {
+                callbacksRef.current.onError?.(error);
+            }
+        };
+
+        worker.postMessage({ download: true });
+        workersRef.current = [worker];
+    }, []);
+
     // Initialize workers and ring buffer
     useEffect(() => {
         if (!sabSupportedRef.current) {
@@ -135,127 +255,7 @@ export function useTTS({ onReady, onError, onProgress, onSpeakStart }: UseTTSOpt
                 audioRef.current = null;
             }
         };
-    }, []);
-
-    // Fallback for browsers without SAB
-    const initFallbackMode = useCallback(() => {
-        const worker = new Worker(new URL('../workers/tts.worker.ts', import.meta.url));
-
-        worker.onmessage = (event: MessageEvent<TTSResponse>) => {
-            const { isReady: ready, error, downloadProgress } = event.data;
-
-            if (ready) {
-                setIsReady(true);
-                callbacksRef.current.onReady?.();
-            }
-
-            if (downloadProgress !== undefined) {
-                callbacksRef.current.onProgress?.(downloadProgress);
-            }
-
-            if (error) {
-                callbacksRef.current.onError?.(error);
-            }
-        };
-
-        worker.postMessage({ download: true });
-        workersRef.current = [worker];
-    }, []);
-
-    // Playback loop: waits for slots in order and plays them
-    const startPlaybackLoop = useCallback(async () => {
-        if (playbackLoopActiveRef.current) return;
-        playbackLoopActiveRef.current = true;
-        setIsSpeaking(true);
-
-        console.log('[TTS] Playback loop started');
-
-        const ringBuffer = ringBufferRef.current;
-        if (!ringBuffer) {
-            playbackLoopActiveRef.current = false;
-            setIsSpeaking(false);
-            return;
-        }
-
-        while (true) {
-            const expectedId = nextExpectedIdRef.current;
-            const slotIndex = expectedId % SLOT_COUNT;
-
-            // Check if there's anything to play
-            const status = ringBuffer.getStatus(slotIndex);
-            if (status !== SLOT_READY) {
-                // No more audio ready, exit loop
-                console.log(`[TTS] Playback loop: Slot ${slotIndex} not ready (status ${status}), pausing`);
-                break;
-            }
-
-            // Read audio from slot
-            const audioData = ringBuffer.readSlot(slotIndex);
-            const text = sentenceTextMapRef.current.get(expectedId) || '';
-
-            console.log(`[TTS] Playing ID ${expectedId} from Slot ${slotIndex} (${audioData.length} bytes)`);
-
-            // Trigger callback
-            if (text) {
-                setSpokenText(text);
-                callbacksRef.current.onSpeakStart?.(text);
-            }
-
-            // Play audio if we have data
-            if (audioData.length > 0) {
-                isPlayingRef.current = true;
-                try {
-                    await playAudioFromUint8Array(audioData);
-                } catch (e) {
-                    console.error('[TTS] Playback error:', e);
-                }
-                isPlayingRef.current = false;
-            } else {
-                // Empty audio (filtered text) - minimal pause
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
-
-            // Free slot and advance
-            ringBuffer.freeSlot(slotIndex);
-            sentenceTextMapRef.current.delete(expectedId);
-            nextExpectedIdRef.current++;
-        }
-
-        playbackLoopActiveRef.current = false;
-        setIsSpeaking(false);
-        console.log('[TTS] Playback loop ended');
-    }, []);
-
-    // Play audio from Uint8Array (WAV data)
-    const playAudioFromUint8Array = useCallback((data: Uint8Array): Promise<void> => {
-        return new Promise((resolve, reject) => {
-            try {
-                // Copy data to a regular ArrayBuffer (SAB-backed arrays can't be used directly as BlobPart)
-                const buffer = new ArrayBuffer(data.length);
-                const view = new Uint8Array(buffer);
-                view.set(data);
-
-                const blob = new Blob([buffer], { type: 'audio/wav' });
-                const url = URL.createObjectURL(blob);
-                const audio = new Audio(url);
-                audioRef.current = audio;
-
-                audio.onended = () => {
-                    URL.revokeObjectURL(url);
-                    resolve();
-                };
-
-                audio.onerror = (e) => {
-                    URL.revokeObjectURL(url);
-                    reject(e);
-                };
-
-                audio.play().catch(reject);
-            } catch (e) {
-                reject(e);
-            }
-        });
-    }, []);
+    }, [initFallbackMode, startPlaybackLoop]);
 
     // Speak a sentence (dispatch to worker)
     const speak = useCallback((text: string) => {

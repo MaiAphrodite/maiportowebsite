@@ -391,7 +391,7 @@ export const ChatStreamApp = () => {
     const latestAssistantMessage = [...messages].reverse().find((m: ChatMessage) => m.role === 'assistant');
 
     const [spokenTranscript, setSpokenTranscript] = useState('');
-    const { speak, speakMessage, reset: resetTTS } = useTTS({
+    const { speak, reset: resetTTS } = useTTS({
         onSpeakStart: (text) => {
             setSpokenTranscript(prev => {
                 if (!prev) return text;
@@ -405,7 +405,13 @@ export const ChatStreamApp = () => {
     const lastSpokenIndexRef = useRef(0);
     const displayedMessageIdRef = useRef<string | null>(null);
 
-    useEffect(() => { setSpokenTranscript(''); }, [latestAssistantMessage?.id]);
+    // Reset spoken transcript when a new message starts
+    useEffect(() => {
+        if (latestAssistantMessage?.id && displayedMessageIdRef.current !== latestAssistantMessage.id) {
+            displayedMessageIdRef.current = latestAssistantMessage.id;
+            setTimeout(() => setSpokenTranscript(''), 0);
+        }
+    }, [latestAssistantMessage?.id]);
 
     const getMessageContent = (msg?: ChatMessage) => {
         if (!msg) return '';

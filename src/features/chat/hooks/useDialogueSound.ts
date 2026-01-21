@@ -1,5 +1,5 @@
 
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback } from 'react';
 
 // Create reverb impulse utility (moved from component)
 function createReverbImpulse(ctx: AudioContext): AudioBuffer {
@@ -11,7 +11,6 @@ function createReverbImpulse(ctx: AudioContext): AudioBuffer {
     const right = impulse.getChannelData(1);
 
     for (let i = 0; i < length; i++) {
-        const n = length - i;
         const decayVal = Math.pow(1 - i / length, decay);
         // White noise
         left[i] = (Math.random() * 2 - 1) * decayVal;
@@ -133,7 +132,7 @@ export function useDialogueSound() {
                 })
                 .catch(() => { });
 
-        } catch (_) {
+        } catch {
             // Silent fail
         }
     }, []);

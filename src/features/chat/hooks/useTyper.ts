@@ -43,7 +43,7 @@ export function useTyper({ fullText, isVoiceEnabled, spokenText, onTypeComplete 
 
             // Snap if target reset or diverged
             if (!target.startsWith(current) && current !== '') {
-                setDisplayedText(target);
+                setTimeout(() => setDisplayedText(target), 0);
                 return;
             }
 
@@ -149,6 +149,6 @@ export function useTyper({ fullText, isVoiceEnabled, spokenText, onTypeComplete 
     return {
         displayedText,
         setDisplayedText, // Expose reset capability
-        isTyping: isTypingRef.current
+        isTyping: () => isTypingRef.current
     };
 }
