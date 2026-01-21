@@ -25,6 +25,9 @@ interface ChatContextType {
     setDisplayedMessageId: (id: string | null) => void;
     displayedText: string;
     setDisplayedText: (text: string) => void;
+    // Voice
+    isVoiceEnabled: boolean;
+    setIsVoiceEnabled: (value: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -46,6 +49,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     const [showAiReplies, setShowAiReplies] = useState(false);
     const [displayedMessageId, setDisplayedMessageId] = useState<string | null>(null);
     const [displayedText, setDisplayedText] = useState('');
+    const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
     // Use useState for stable mutable object to avoid "reading ref during render" lint
     const [messageTimestamps] = useState(() => new Map<string, Date>());
 
@@ -107,6 +111,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         setDisplayedMessageId,
         displayedText,
         setDisplayedText,
+        isVoiceEnabled,
+        setIsVoiceEnabled,
     };
 
     return (
