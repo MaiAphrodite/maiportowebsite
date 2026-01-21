@@ -1,5 +1,6 @@
 import * as ort from 'onnxruntime-web';
-import { createPiperPhonemize, PiperPhonemizer } from './piperPhonemize.js';
+import { createPiperPhonemize } from './piperPhonemize.js';
+import type { PiperPhonemizer } from './piperPhonemize.js';
 
 export interface PiperSessionConfig {
     voiceId: string;
@@ -108,7 +109,7 @@ export class PiperSession {
         }
 
         if (inputNames.includes('sid') && this.modelConfig.num_speakers > 1) {
-            feeds['sid'] = new ort.Tensor('int64', BigInt64Array.from([0n]), [1]);
+            feeds['sid'] = new ort.Tensor('int64', BigInt64Array.from([BigInt(0)]), [1]);
         }
 
         const results = await this.session.run(feeds);
