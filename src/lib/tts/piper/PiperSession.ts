@@ -12,6 +12,7 @@ export interface PiperSessionConfig {
 
 export class PiperSession {
     private session: ort.InferenceSession | null = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private createPiperPhonemize: any = null;
     private config: PiperSessionConfig;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -70,12 +71,12 @@ export class PiperSession {
     }
 
     private async getPhonemeIds(text: string): Promise<number[]> {
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async (resolve) => {
             const wasmPath = this.config.wasmPath.endsWith('.wasm')
                 ? this.config.wasmPath
                 : `${this.config.wasmPath}/piper_phonemize.wasm`;
 
-            const module = await this.createPiperPhonemize({
+            const piperModule = await this.createPiperPhonemize({
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 print: (data: any) => {
                     try {
@@ -83,12 +84,12 @@ export class PiperSession {
                         if (json.phoneme_ids) {
                             resolve(json.phoneme_ids);
                         }
-                    } catch (e) {
+                    } catch {
                         // Ignore non-JSON output
                     }
                 },
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                printErr: (msg: any) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+                printErr: (_msg: any) => {
                     // console.warn('Piper Phonemize Stderr:', msg);
                 },
                 locateFile: (url: string) => {
@@ -101,7 +102,7 @@ export class PiperSession {
             const config = this.modelConfig;
             const input = JSON.stringify([{ text: text.trim() }]);
 
-            module.callMain([
+            piperModule.callMain([
                 '-l',
                 config.espeak.voice,
                 '--input',
