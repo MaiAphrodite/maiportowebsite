@@ -41,19 +41,27 @@ export class PiperSession {
         if (!configResp.ok) throw new Error(`Failed to fetch config: ${configResp.statusText}`);
         this.modelConfig = await configResp.json();
 
-        // 4. Load & Create ONNX Session
-        this.log(`Loading ONNX Model (WebGPU): ${this.config.modelPath}`);
+        // 4. Load & Create ONNX Session with WebGPU -> WASM fallback
+        this.log(`Loading ONNX Model: ${this.config.modelPath}`);
         const modelResp = await fetch(this.config.modelPath);
         if (!modelResp.ok) throw new Error(`Failed to fetch model: ${modelResp.statusText}`);
         const modelArrayBuffer = await modelResp.arrayBuffer();
 
-        this.session = await ort.InferenceSession.create(modelArrayBuffer, {
-            // Priority: WebGPU -> WASM
-            executionProviders: ['webgpu', 'wasm'],
-            graphOptimizationLevel: 'all'
-        });
-
-        this.log('PiperSession Initialized (WebGPU + Local Assets)');
+        // Try WebGPU first, fall back to WASM on failure
+        try {
+            this.session = await ort.InferenceSession.create(modelArrayBuffer, {
+                executionProviders: ['webgpu'],
+                graphOptimizationLevel: 'all'
+            });
+            this.log('PiperSession Initialized (WebGPU)');
+        } catch (webgpuError) {
+            this.log(`WebGPU failed: ${webgpuError}. Falling back to WASM...`);
+            this.session = await ort.InferenceSession.create(modelArrayBuffer, {
+                executionProviders: ['wasm'],
+                graphOptimizationLevel: 'all'
+            });
+            this.log('PiperSession Initialized (WASM fallback)');
+        }
     }
 
     async synthesize(text: string): Promise<Int16Array> {

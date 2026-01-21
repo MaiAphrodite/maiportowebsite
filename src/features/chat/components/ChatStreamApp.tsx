@@ -10,6 +10,7 @@ import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
 import { useChatContext } from '@/features/chat/context/ChatContext';
 import { useTyper } from '@/features/chat/hooks/useTyper';
+import { VoiceActivationModal } from './VoiceActivationModal';
 
 // Resilient Turnstile Verification Component
 const TurnstileVerification = React.memo(({
@@ -277,7 +278,7 @@ const ChatSidebar = React.memo(({
     showAiReplies,
     setShowAiReplies,
     isVoiceEnabled,
-    setIsVoiceEnabled
+    onVoiceToggle
 }: {
     allMessages: ChatMessage[],
     userMessages: ChatMessage[],
@@ -293,7 +294,7 @@ const ChatSidebar = React.memo(({
     showAiReplies: boolean,
     setShowAiReplies: (v: boolean) => void,
     isVoiceEnabled: boolean,
-    setIsVoiceEnabled: (v: boolean) => void
+    onVoiceToggle: () => void
 }) => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -328,7 +329,7 @@ const ChatSidebar = React.memo(({
                             <button onClick={() => { setShowAiReplies(!showAiReplies); setMenuOpen(false); }} className="w-full px-3 py-2.5 flex items-center gap-2 text-sm text-mai-text hover:bg-mai-surface-dim transition-colors text-left">
                                 {showAiReplies ? <Eye size={14} /> : <EyeOff size={14} />} <span>{showAiReplies ? 'Showing AI replies' : 'AI replies hidden'}</span>
                             </button>
-                            <button onClick={() => { setIsVoiceEnabled(!isVoiceEnabled); setMenuOpen(false); }} className="w-full px-3 py-2.5 flex items-center gap-2 text-sm text-mai-text hover:bg-mai-surface-dim transition-colors text-left">
+                            <button onClick={() => { onVoiceToggle(); setMenuOpen(false); }} className="w-full px-3 py-2.5 flex items-center gap-2 text-sm text-mai-text hover:bg-mai-surface-dim transition-colors text-left">
                                 {isVoiceEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />} <span>{isVoiceEnabled ? 'Voice Mode On' : 'Voice Mode Off'}</span>
                             </button>
                         </div>
@@ -390,20 +391,36 @@ export const ChatStreamApp = () => {
     const userMessages = messages.filter((m: ChatMessage) => m.role === 'user');
     const latestAssistantMessage = [...messages].reverse().find((m: ChatMessage) => m.role === 'assistant');
 
+    // Voice activation modal state
+    const [showVoiceModal, setShowVoiceModal] = useState(false);
+    const [ttsProgress, setTtsProgress] = useState(0);
+    const [ttsError, setTtsError] = useState<string | undefined>(undefined);
+
     const [spokenTranscript, setSpokenTranscript] = useState('');
-    const { speak, reset: resetTTS } = useTTS({
+    const { speak, reset: resetTTS, isReady: ttsIsReady } = useTTS({
         onSpeakStart: (text) => {
             setSpokenTranscript(prev => {
                 if (!prev) return text;
                 if (prev.endsWith(text)) return prev;
                 return `${prev} ${text}`;
             });
-        }
+        },
+        onProgress: (percent) => setTtsProgress(percent),
+        onReady: () => {
+            setTtsProgress(100);
+            // Enable voice mode after TTS is ready
+            if (showVoiceModal) {
+                setIsVoiceEnabled(true);
+            }
+        },
+        onError: (error) => setTtsError(error)
     });
 
     // Streaming state refs
     const lastSpokenIndexRef = useRef(0);
     const displayedMessageIdRef = useRef<string | null>(null);
+    // Track which message was showing when voice was enabled (to prevent re-speaking)
+    const voiceEnabledAtMessageIdRef = useRef<string | null>(null);
 
     // Reset spoken transcript when a new message starts
     useEffect(() => {
@@ -412,6 +429,32 @@ export const ChatStreamApp = () => {
             setTimeout(() => setSpokenTranscript(''), 0);
         }
     }, [latestAssistantMessage?.id]);
+
+    // Track when voice mode is enabled to prevent re-speaking existing messages
+    useEffect(() => {
+        if (isVoiceEnabled && !voiceEnabledAtMessageIdRef.current) {
+            voiceEnabledAtMessageIdRef.current = latestAssistantMessage?.id || null;
+        } else if (!isVoiceEnabled) {
+            voiceEnabledAtMessageIdRef.current = null;
+        }
+    }, [isVoiceEnabled, latestAssistantMessage?.id]);
+
+    // Handle voice toggle with modal
+    const handleVoiceToggle = useCallback(() => {
+        if (isVoiceEnabled) {
+            // Turning off - just disable
+            setIsVoiceEnabled(false);
+        } else {
+            // Turning on - show modal if not ready, otherwise enable
+            if (ttsIsReady) {
+                voiceEnabledAtMessageIdRef.current = latestAssistantMessage?.id || null;
+                setIsVoiceEnabled(true);
+            } else {
+                setShowVoiceModal(true);
+                setTtsError(undefined);
+            }
+        }
+    }, [isVoiceEnabled, ttsIsReady, latestAssistantMessage?.id, setIsVoiceEnabled]);
 
     const getMessageContent = (msg?: ChatMessage) => {
         if (!msg) return '';
@@ -436,6 +479,9 @@ export const ChatStreamApp = () => {
         }
 
         if (!isVoiceEnabled) return;
+
+        // Don't speak messages that existed before voice was enabled
+        if (voiceEnabledAtMessageIdRef.current === latestAssistantMessage.id) return;
 
         const fullText = getMessageContent(latestAssistantMessage);
         const unspokenText = fullText.slice(lastSpokenIndexRef.current);
@@ -519,25 +565,43 @@ export const ChatStreamApp = () => {
     }, [chatWindow, updateWindowSize]);
 
     return (
-        <div ref={containerRef} className="flex flex-col h-full w-full bg-mai-surface-dim text-mai-text overflow-hidden">
-            <div className="bg-mai-surface px-4 py-2.5 flex items-center justify-between border-b-2 border-mai-border shrink-0">
-                <div className="flex items-center gap-4 flex-1">
-                    <div className="flex gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-pink-400" />
-                        <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                        <div className="w-3 h-3 rounded-full bg-green-400" />
-                    </div>
-                    <div className="flex-1 max-w-xl mx-4 bg-mai-surface-dim rounded-xl px-4 py-1.5 text-xs text-mai-subtext flex items-center gap-2 border-2 border-mai-border">
-                        <span className="text-pink-500">♡</span>
-                        <span className="text-mai-text font-medium">mai.stream/live</span>
-                        <span className="ml-auto text-[10px] bg-gradient-to-r from-pink-400 to-rose-400 text-white px-2 py-0.5 rounded-xl">LIVE</span>
+        <>
+            <VoiceActivationModal
+                isOpen={showVoiceModal}
+                progress={ttsProgress}
+                isReady={ttsIsReady}
+                error={ttsError}
+                onClose={() => {
+                    setShowVoiceModal(false);
+                    if (ttsIsReady) {
+                        voiceEnabledAtMessageIdRef.current = latestAssistantMessage?.id || null;
+                    }
+                }}
+                onRetry={() => {
+                    setTtsError(undefined);
+                    setTtsProgress(0);
+                }}
+            />
+            <div ref={containerRef} className="flex flex-col h-full w-full bg-mai-surface-dim text-mai-text overflow-hidden">
+                <div className="bg-mai-surface px-4 py-2.5 flex items-center justify-between border-b-2 border-mai-border shrink-0">
+                    <div className="flex items-center gap-4 flex-1">
+                        <div className="flex gap-1.5">
+                            <div className="w-3 h-3 rounded-full bg-pink-400" />
+                            <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                            <div className="w-3 h-3 rounded-full bg-green-400" />
+                        </div>
+                        <div className="flex-1 max-w-xl mx-4 bg-mai-surface-dim rounded-xl px-4 py-1.5 text-xs text-mai-subtext flex items-center gap-2 border-2 border-mai-border">
+                            <span className="text-pink-500">♡</span>
+                            <span className="text-mai-text font-medium">mai.stream/live</span>
+                            <span className="ml-auto text-[10px] bg-gradient-to-r from-pink-400 to-rose-400 text-white px-2 py-0.5 rounded-xl">LIVE</span>
+                        </div>
                     </div>
                 </div>
+                <div className={`flex-1 flex overflow-hidden ${isCompact ? 'flex-col' : 'flex-row'}`}>
+                    <StreamFeed latestAssistantMessage={latestAssistantMessage} isCompact={isCompact} isVoiceEnabled={isVoiceEnabled} spokenText={spokenTranscript} />
+                    <ChatSidebar allMessages={messages} userMessages={userMessages} messageTimestamps={messageTimestamps} status={status} isLoading={isLoading} token={token} setToken={setToken} input={input} handleInputChange={handleInputChange} handleSubmit={handleSubmit} isCompact={isCompact} showAiReplies={showAiReplies} setShowAiReplies={setShowAiReplies} isVoiceEnabled={isVoiceEnabled} onVoiceToggle={handleVoiceToggle} />
+                </div>
             </div>
-            <div className={`flex-1 flex overflow-hidden ${isCompact ? 'flex-col' : 'flex-row'}`}>
-                <StreamFeed latestAssistantMessage={latestAssistantMessage} isCompact={isCompact} isVoiceEnabled={isVoiceEnabled} spokenText={spokenTranscript} />
-                <ChatSidebar allMessages={messages} userMessages={userMessages} messageTimestamps={messageTimestamps} status={status} isLoading={isLoading} token={token} setToken={setToken} input={input} handleInputChange={handleInputChange} handleSubmit={handleSubmit} isCompact={isCompact} showAiReplies={showAiReplies} setShowAiReplies={setShowAiReplies} isVoiceEnabled={isVoiceEnabled} setIsVoiceEnabled={setIsVoiceEnabled} />
-            </div>
-        </div>
+        </>
     );
 };
