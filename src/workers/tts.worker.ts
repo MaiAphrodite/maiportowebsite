@@ -19,10 +19,11 @@ interface TTSRequest {
 // Configuration
 const VOICE_ID = 'en_US-hfc_female-medium';
 
-// GitHub Release for patched WebGPU-compatible model (INT32)
-const MODEL_URL = 'https://github.com/MaiAphrodite/maiportowebsite/releases/download/tts-models-v1/en_US-hfc_female-medium-int32.onnx';
-// Config from HuggingFace (small file, OK to use their CDN)
-const CONFIG_URL = 'https://huggingface.co/diffusionstudio/piper-voices/resolve/main/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx.json';
+// HuggingFace CDN (has CORS headers)
+// Note: WebGPU will fail with INT64 error, but WASM fallback works
+const MODEL_BASE = 'https://huggingface.co/diffusionstudio/piper-voices/resolve/main/en/en_US/hfc_female/medium';
+const MODEL_URL = `${MODEL_BASE}/${VOICE_ID}.onnx`;
+const CONFIG_URL = `${MODEL_BASE}/${VOICE_ID}.onnx.json`;
 const PIPER_BASE = 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.wasm';
 // ONNX Runtime Web files from CDN
 const ONNX_WASM_PATH = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.2/dist/';
