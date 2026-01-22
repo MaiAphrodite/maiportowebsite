@@ -19,8 +19,10 @@ interface TTSRequest {
 // Configuration
 const VOICE_ID = 'en_US-hfc_female-medium';
 
-// CDN Paths for bandwidth savings independent of Vercel
-const MODEL_BASE = 'https://huggingface.co/diffusionstudio/piper-voices/resolve/main/en/en_US/hfc_female/medium';
+// GitHub Release for patched WebGPU-compatible model (INT32)
+const MODEL_URL = 'https://github.com/MaiAphrodite/maiportowebsite/releases/download/tts-models-v1/en_US-hfc_female-medium-int32.onnx';
+// Config from HuggingFace (small file, OK to use their CDN)
+const CONFIG_URL = 'https://huggingface.co/diffusionstudio/piper-voices/resolve/main/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx.json';
 const PIPER_BASE = 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.wasm';
 // ONNX Runtime Web files from CDN
 const ONNX_WASM_PATH = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.2/dist/';
@@ -76,11 +78,12 @@ async function initSession() {
 
         session = new PiperSession({
             voiceId: VOICE_ID,
-            modelPath: `${MODEL_BASE}/${VOICE_ID}.onnx`,
-            modelConfigPath: `${MODEL_BASE}/${VOICE_ID}.onnx.json`,
-            wasmPath: PIPER_BASE, // Folder containing piper_phonemize.wasm
+            modelPath: MODEL_URL,
+            modelConfigPath: CONFIG_URL,
+            wasmPath: PIPER_BASE,
             onnxWasmPath: ONNX_WASM_PATH,
-            logger: (msg) => console.log(`[PiperWorker] ${msg}`)
+            logger: (msg) => console.log(`[PiperWorker] ${msg}`),
+            onProgress: (percent) => self.postMessage({ downloadProgress: percent })
         });
 
         await session.init();

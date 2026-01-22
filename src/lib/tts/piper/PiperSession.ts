@@ -8,6 +8,7 @@ export interface PiperSessionConfig {
     wasmPath: string;       // Path to piper_phonemize.wasm location (directory or file)
     onnxWasmPath: string;   // Path to onnxruntime-web WASM files
     logger?: (msg: string) => void;
+    onProgress?: (percent: number) => void;
 }
 
 export class PiperSession {
@@ -17,9 +18,50 @@ export class PiperSession {
     private config: PiperSessionConfig;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private modelConfig: any = null;
+    private usingWebGPU: boolean = false;
 
     constructor(config: PiperSessionConfig) {
         this.config = config;
+    }
+
+    /**
+     * Fetch with progress reporting for large files
+     */
+    private async fetchWithProgress(url: string): Promise<ArrayBuffer> {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
+
+        const contentLength = response.headers.get('content-length');
+        if (!contentLength || !response.body) {
+            // Fallback: no progress, just download
+            return response.arrayBuffer();
+        }
+
+        const total = parseInt(contentLength, 10);
+        let received = 0;
+        const chunks: Uint8Array[] = [];
+        const reader = response.body.getReader();
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            chunks.push(value);
+            received += value.length;
+
+            const percent = Math.round((received / total) * 100);
+            this.config.onProgress?.(percent);
+        }
+
+        // Combine chunks into single ArrayBuffer
+        const result = new Uint8Array(received);
+        let offset = 0;
+        for (const chunk of chunks) {
+            result.set(chunk, offset);
+            offset += chunk.length;
+        }
+
+        return result.buffer;
     }
 
     async init() {
@@ -41,27 +83,54 @@ export class PiperSession {
         if (!configResp.ok) throw new Error(`Failed to fetch config: ${configResp.statusText}`);
         this.modelConfig = await configResp.json();
 
-        // 4. Load & Create ONNX Session with WebGPU -> WASM fallback
+        // 4. Load ONNX Model with progress
         this.log(`Loading ONNX Model: ${this.config.modelPath}`);
-        const modelResp = await fetch(this.config.modelPath);
-        if (!modelResp.ok) throw new Error(`Failed to fetch model: ${modelResp.statusText}`);
-        const modelArrayBuffer = await modelResp.arrayBuffer();
+        const modelArrayBuffer = await this.fetchWithProgress(this.config.modelPath);
+        this.log('Model downloaded, creating session...');
 
-        // Try WebGPU first, fall back to WASM on failure
+        // 5. Create ONNX Session with WebGPU -> WASM fallback
         try {
             this.session = await ort.InferenceSession.create(modelArrayBuffer, {
-                executionProviders: ['webgpu'],
+                executionProviders: ['webgpu', 'wasm'],
                 graphOptimizationLevel: 'all'
             });
+
+            // Test run to verify WebGPU works
+            await this.testSession();
+            this.usingWebGPU = true;
             this.log('PiperSession Initialized (WebGPU)');
-        } catch (webgpuError) {
-            this.log(`WebGPU failed: ${webgpuError}. Falling back to WASM...`);
+        } catch (e) {
+            this.log(`WebGPU failed: ${e}, falling back to WASM`);
+
+            // Retry with WASM only
             this.session = await ort.InferenceSession.create(modelArrayBuffer, {
                 executionProviders: ['wasm'],
                 graphOptimizationLevel: 'all'
             });
+            this.usingWebGPU = false;
             this.log('PiperSession Initialized (WASM fallback)');
         }
+    }
+
+    /**
+     * Test session with a minimal input to catch WebGPU errors early
+     */
+    private async testSession(): Promise<void> {
+        if (!this.session) return;
+
+        const feeds: Record<string, ort.Tensor> = {};
+
+        // Minimal test: single phoneme
+        const testPhonemes = [0]; // Silence phoneme
+        feeds['input'] = new ort.Tensor('int64', BigInt64Array.from(testPhonemes.map(BigInt)), [1, 1]);
+        feeds['input_lengths'] = new ort.Tensor('int64', BigInt64Array.from([BigInt(1)]), [1]);
+
+        if (this.session.inputNames.includes('scales')) {
+            feeds['scales'] = new ort.Tensor('float32', Float32Array.from([0.667, 1.0, 0.8]), [3]);
+        }
+
+        // This will throw if WebGPU doesn't support the model
+        await this.session.run(feeds);
     }
 
     async synthesize(text: string): Promise<Int16Array> {
@@ -126,7 +195,7 @@ export class PiperSession {
 
         const feeds: Record<string, ort.Tensor> = {};
 
-        // Prepare inputs
+        // Prepare inputs (INT64 for compatibility with both original and patched models)
         const phonemeTensor = new ort.Tensor('int64', BigInt64Array.from(phonemeIds.map(BigInt)), [1, phonemeIds.length]);
         const lengthTensor = new ort.Tensor('int64', BigInt64Array.from([BigInt(phonemeIds.length)]), [1]);
 
