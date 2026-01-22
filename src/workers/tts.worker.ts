@@ -19,9 +19,9 @@ interface TTSRequest {
 // Configuration
 const VOICE_ID = 'en_US-hfc_female-medium';
 
-// GitHub Release for patched WebGPU-compatible model (INT32)
-const MODEL_URL = 'https://github.com/MaiAphrodite/maiportowebsite/releases/download/tts-models-v1/en_US-hfc_female-medium-int32.onnx';
-// Config from HuggingFace (small file, OK to use their CDN)
+// HuggingFace Hub for patched INT32 model (CORS-friendly, saves Vercel bandwidth, works with WebGPU)
+const MODEL_URL = 'https://huggingface.co/MaiAphrodite/piper-tts-webgpu/resolve/main/en_US-hfc_female-medium-int32.onnx';
+// Config from original Piper voices repo
 const CONFIG_URL = 'https://huggingface.co/diffusionstudio/piper-voices/resolve/main/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx.json';
 const PIPER_BASE = 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.wasm';
 // ONNX Runtime Web files from CDN

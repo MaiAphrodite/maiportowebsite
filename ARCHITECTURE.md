@@ -286,6 +286,44 @@ import { useWindowManager } from '@/features/desktop';
 
 ---
 
+## Text-to-Speech (TTS)
+
+### Overview
+
+Client-side TTS using [Piper TTS](https://github.com/rhasspy/piper) running in Web Workers with ONNX Runtime.
+
+### Architecture
+
+```
+┌─────────────┐     ┌──────────────────┐     ┌──────────────┐
+│  useTTS()   │────▶│  TTS Workers (4) │────▶│ PiperSession │
+│   (hook)    │     │  (ring buffer)   │     │  (ONNX)      │
+└─────────────┘     └──────────────────┘     └──────────────┘
+                             │
+                    ┌────────┴────────┐
+                    ▼                 ▼
+               [WebGPU]          [WASM fallback]
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `src/hooks/useTTS.ts` | Main TTS hook with ring buffer playback |
+| `src/workers/tts.worker.ts` | Web Worker for synthesis |
+| `src/lib/tts/piper/PiperSession.ts` | ONNX inference session |
+| `src/lib/tts/RingBuffer.ts` | SharedArrayBuffer ring buffer |
+| `scripts/patch_onnx_int32.py` | Tool to patch models for WebGPU |
+
+### Model
+
+- **Voice**: `en_US-hfc_female-medium` (Hi-Fi Captain)
+- **License**: CC BY-NC-SA 4.0 (non-commercial)
+- **Hosting**: [HuggingFace](https://huggingface.co/MaiAphrodite/piper-tts-webgpu)
+- **Format**: ONNX (patched INT32 for WebGPU)
+
+---
+
 ## Security
 
 1. **Turnstile**: Client-side bot protection on chat endpoint
