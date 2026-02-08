@@ -1,13 +1,10 @@
 "use client";
 
-import React, { useCallback } from 'react';
-import { useDesktop, useDesktopActions, type WindowContent } from '@/features/desktop/context/DesktopContext';
+import React from 'react';
+import { useDesktop, type WindowContent } from '@/features/desktop/context/DesktopContext';
 import { useMobile } from '@/shared/hooks/useMobile';
-import { useMobileGestures } from '@/shared/hooks/useMobileGestures';
 import { Taskbar } from './Taskbar';
-import { DesktopIcons } from './DesktopIcons';
 import { Window } from './Window';
-import { MobileHome } from '@/features/desktop/components/mobile/MobileHome';
 import { MobileStatusBar } from '@/features/desktop/components/mobile/MobileStatusBar';
 import { WelcomeApp } from '@/features/portfolio/components/WelcomeApp';
 import { MusicWidget } from '@/features/portfolio/components/MusicWidget';
@@ -73,8 +70,7 @@ import { Dashboard } from './Dashboard';
 // ... WindowContentRenderer remains same ...
 
 export const Desktop = () => {
-    const { windows, activeWindowId, openWindow } = useDesktop(); // Need openWindow for dashboard? No, dashboard uses hook.
-    const { minimizeWindow } = useDesktopActions();
+    const { windows } = useDesktop();
     const isMobile = useMobile();
 
     // ... gesture hooks remain same ...

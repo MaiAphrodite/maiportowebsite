@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { useDesktopActions } from '@/features/desktop/context/DesktopContext';
-import { ArrowRight, Folder, Mail, Github, Twitter, Linkedin, Globe } from 'lucide-react';
+import { ArrowRight, Folder, Mail, Github, Globe } from 'lucide-react';
 
 import { GithubUserProfile } from '@/services/github';
 

@@ -44,7 +44,6 @@ export const Window = React.memo(({ windowState, children }: WindowProps) => {
     }, [id, isMaximized, isMobile, isWidget, updateWindowSize, windowState.size.width, windowState.size.height]);
 
     const draggableKey = isMaximized ? `win-${id}-max` : `win-${id}-restored`;
-    const initialPos = isMaximized ? { x: 0, y: 0 } : windowState.position;
 
     return (
         <Draggable

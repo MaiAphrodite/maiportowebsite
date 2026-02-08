@@ -107,7 +107,7 @@ export const BootSplash = () => {
             }, 500);
             return () => clearTimeout(fadeTimer);
         }
-    }, [loadProgress, displayedText]);
+    }, [loadProgress, displayedText, setBooted]);
 
     if (isComplete) return null;
 

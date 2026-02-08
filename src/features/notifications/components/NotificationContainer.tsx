@@ -12,9 +12,6 @@ export const NotificationContainer = () => {
 
     if (!isBooted) return null;
 
-    // Limit to 1 notification for Ticker Mode (Actually we pass all now)
-    const visibleNotifications = notifications;
-
     return (
         <div
             className={`fixed z-[99999] pointer-events-none flex flex-col justify-end

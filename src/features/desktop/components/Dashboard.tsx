@@ -4,18 +4,15 @@ import React from 'react';
 import { WelcomeApp } from '@/features/portfolio/components/WelcomeApp';
 import { MusicWidget } from '@/features/portfolio/components/MusicWidget';
 import { useDesktopActions, WindowContent } from '@/features/desktop/context/DesktopContext';
-import { Folder, Terminal, Globe, ArrowRight, User } from 'lucide-react';
-import { useMobile } from '@/shared/hooks/useMobile';
+import { Folder, Terminal, Globe, ArrowRight } from 'lucide-react';
 import { fileSystem, FileSystemItem } from '@/features/files/data/fileSystem';
 import { fetchGithubRepos, GithubRepo, fetchGithubUser, GithubUserProfile, inferTechStack } from '@/services/github';
 import { fetchMediumArticles, MediumArticle } from '@/services/medium';
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 
 export const Dashboard = () => {
     // Hybrid Dashboard Component
     const { openWindow } = useDesktopActions();
-    const isMobile = useMobile();
     const [projects, setProjects] = useState<GithubRepo[]>([]);
     const [articles, setArticles] = useState<MediumArticle[]>([]);
     const [profile, setProfile] = useState<GithubUserProfile | null>(null);
@@ -39,15 +36,7 @@ export const Dashboard = () => {
         loadData();
     }, []);
 
-    const openProject = (id: string, name: string) => {
-        openWindow({
-            id: 'projects',
-            title: name,
-            type: 'component',
-            content: { app: 'explorer', initialPath: ['projects', id] },
-            size: { width: 900, height: 700 }
-        });
-    };
+
 
     const handleIconClick = (item: FileSystemItem) => {
         if (item.type === 'folder') {
@@ -188,7 +177,6 @@ export const Dashboard = () => {
                         <h3 className="text-white/40 text-xs font-bold uppercase tracking-wider mb-4">Desktop ({fileSystem.length})</h3>
                         <div className="grid grid-cols-4 gap-2">
                             {fileSystem.map((item) => {
-                                const Icon = item.icon || (item.type === 'folder' ? Folder : Terminal); // Fallback logic
                                 return (
                                     <div
                                         key={item.id}

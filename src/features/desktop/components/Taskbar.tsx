@@ -5,11 +5,12 @@ import { useDesktop } from '@/features/desktop/context/DesktopContext';
 import { Home, Briefcase, User, Mail, Sun, Moon } from 'lucide-react';
 
 export const Taskbar = () => {
-    const { openWindow, windows, toggleTheme, theme } = useDesktop();
+    const { openWindow, toggleTheme, theme } = useDesktop();
     const [time, setTime] = useState<Date | null>(null);
     const [activeNav, setActiveNav] = useState('home');
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTime(new Date());
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
