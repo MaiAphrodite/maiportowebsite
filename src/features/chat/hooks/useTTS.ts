@@ -14,7 +14,6 @@ export function useTTS({ enabled, onStartSpeaking, onStopSpeaking }: TTSOptions)
 
     // Text processing refs
     const processedTextRef = useRef('');
-    const sentenceQueueRef = useRef<string[]>([]);
     const displayBufferRef = useRef('');
 
     const playNext = useCallback(async () => {
@@ -138,7 +137,7 @@ export function useTTS({ enabled, onStartSpeaking, onStopSpeaking }: TTSOptions)
         // We DO NOT match end of string ($) here because in a stream, 
         // the end of the buffer is not necessarily the end of the sentence.
         // We will handle the final sentence via a flush() method or when the stream is done.
-        let buffer = displayBufferRef.current;
+        const buffer = displayBufferRef.current;
         const sentenceRegex = /([.?!]+)(\s+)/g;
 
         let match;
