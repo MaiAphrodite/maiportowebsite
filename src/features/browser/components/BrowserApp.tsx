@@ -210,48 +210,48 @@ export const BrowserApp = () => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-mai-surface text-mai-text overflow-hidden font-sans">
-            {/* Browser Interface */}
-            <div className="h-14 bg-mai-surface-dim border-b border-mai-border/50 flex items-center px-4 gap-3 shrink-0">
-                <div className="flex items-center gap-1 text-mai-subtext">
-                    <Button variant="ghost" size="icon" onClick={handleBack} disabled={currentIndex === 0} className="w-8 h-8 rounded-full hover:bg-mai-surface disabled:opacity-30">
-                        <ArrowLeft size={18} />
+        <div className="flex flex-col h-full bg-transparent text-mai-text overflow-hidden font-sans">
+            {/* Browser Interface - Glass Header */}
+            <div className="h-16 border-b border-mai-border/10 flex items-center px-4 gap-3 shrink-0 bg-transparent backdrop-blur-md">
+                <div className="flex items-center gap-2 text-mai-subtext">
+                    <Button variant="ghost" size="icon" onClick={handleBack} disabled={currentIndex === 0} className="w-9 h-9 rounded-xl hover:bg-mai-surface/50 disabled:opacity-30 border border-transparent hover:border-mai-border/20 transition-all">
+                        <ArrowLeft size={16} />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={handleForward} disabled={currentIndex === history.length - 1} className="w-8 h-8 rounded-full hover:bg-mai-surface disabled:opacity-30">
-                        <ArrowRight size={18} />
+                    <Button variant="ghost" size="icon" onClick={handleForward} disabled={currentIndex === history.length - 1} className="w-9 h-9 rounded-xl hover:bg-mai-surface/50 disabled:opacity-30 border border-transparent hover:border-mai-border/20 transition-all">
+                        <ArrowRight size={16} />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={handleRefresh} className="w-8 h-8 rounded-full hover:bg-mai-surface">
-                        <RotateCw size={16} className={isLoading ? 'animate-spin' : ''} />
+                    <Button variant="ghost" size="icon" onClick={handleRefresh} className="w-9 h-9 rounded-xl hover:bg-mai-surface/50 border border-transparent hover:border-mai-border/20 transition-all">
+                        <RotateCw size={14} className={isLoading ? 'animate-spin' : ''} />
                     </Button>
                 </div>
 
-                <div className="flex-1 bg-mai-surface border-2 border-mai-border/30 focus-within:border-mai-primary/50 shadow-sm rounded-xl overflow-hidden flex items-center h-9 px-3 transition-all relative">
-                    {currentUrl.startsWith('mai://') ? <Lock size={12} className="text-green-500 mr-2 shrink-0" /> : <AlertTriangle size={12} className="text-red-500 mr-2 shrink-0" />}
+                <div className="flex-1 bg-mai-surface/40 border border-mai-border/20 focus-within:border-mai-primary/50 shadow-inner rounded-2xl overflow-hidden flex items-center h-10 px-4 transition-all relative backdrop-blur-sm group">
+                    {currentUrl.startsWith('mai://') ? <Lock size={12} className="text-mai-success mr-2 shrink-0" /> : <AlertTriangle size={12} className="text-mai-error mr-2 shrink-0" />}
                     <form onSubmit={handleUrlSubmit} className="flex-1">
                         <input
                             type="text"
                             value={inputUrl}
                             onChange={(e) => setInputUrl(e.target.value)}
-                            className="w-full text-sm outline-none text-mai-text font-medium bg-transparent h-full"
+                            className="w-full text-xs outline-none text-mai-text font-mono bg-transparent h-full placeholder:text-mai-subtext/50"
                             spellCheck={false}
                         />
                     </form>
                 </div>
 
-                <Button variant="ghost" size="icon" onClick={() => navigate('mai://home')} className="w-9 h-9 rounded-full hover:bg-mai-surface text-mai-subtext">
+                <Button variant="ghost" size="icon" onClick={() => navigate('mai://home')} className="w-9 h-9 rounded-xl hover:bg-mai-surface/50 text-mai-subtext border border-transparent hover:border-mai-border/20 transition-all">
                     <Home size={18} />
                 </Button>
             </div>
 
             {/* Viewport */}
-            <div className="flex-1 overflow-auto bg-mai-surface relative">
+            <div className="flex-1 overflow-auto bg-mai-surface/60 backdrop-blur-3xl relative rounded-t-2xl mx-1 shadow-inner border-t border-white/5">
                 {renderContent()}
             </div>
 
             {/* Status Bar (Fake) */}
-            <div className="h-6 bg-mai-surface-dim border-t border-mai-border/50 px-3 flex items-center justify-between text-[10px] text-mai-subtext cursor-default select-none shrink-0">
+            <div className="h-6 bg-mai-surface-dim/80 backdrop-blur-md border-t border-mai-border/10 px-4 flex items-center justify-between text-[10px] text-mai-subtext cursor-default select-none shrink-0">
                 <span>Simulation Safe Mode: ON</span>
-                <span>MaiNet v12.4.0</span>
+                <span className="font-mono text-mai-primary">MaiNet v12.4.0</span>
             </div>
         </div>
     );

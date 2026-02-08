@@ -37,12 +37,12 @@ export const ExplorerGrid = ({ currentPath, currentFolder, onItemDoubleClick, on
                 <div
                     key={item.id}
                     onDoubleClick={() => onItemDoubleClick(item)}
-                    className="flex flex-col items-center gap-2 p-4 hover:bg-mai-surface-dim rounded-3xl cursor-pointer group transition-all duration-200 border border-transparent hover:border-mai-border/20"
+                    className="flex flex-col items-center gap-2 p-4 hover:bg-mai-surface-dim/40 rounded-2xl cursor-pointer group transition-all duration-300 border-2 border-transparent hover:border-mai-primary/30 hover:shadow-lg hover:-translate-y-1"
                 >
-                    <div className="w-16 h-16 flex items-center justify-center transition-transform group-hover:scale-110">
-                        {item.type === 'folder' ? <Folder size={56} className="text-mai-primary fill-mai-primary/20" /> : <FileText size={56} className="text-mai-secondary" />}
+                    <div className="w-16 h-16 flex items-center justify-center transition-transform group-hover:scale-110 bg-mai-surface/50 rounded-2xl border border-white/5 group-hover:bg-mai-surface">
+                        {item.type === 'folder' ? <Folder size={32} className="text-mai-primary fill-mai-primary/20" /> : <FileText size={32} className="text-mai-secondary" />}
                     </div>
-                    <span className="text-sm truncate w-full text-center select-none text-mai-text font-medium">{item.name}</span>
+                    <span className="text-xs truncate w-full text-center select-none text-mai-text font-medium bg-black/20 px-2 py-0.5 rounded-full">{item.name}</span>
                 </div>
             ))}
         </div>

@@ -22,28 +22,31 @@ export const WindowHeader = ({
 }: WindowHeaderProps) => {
     return (
         <div
-            className="window-header h-12 flex items-center justify-between px-5 cursor-move select-none shrink-0 text-mai-surface"
+            className="window-header h-10 flex items-center justify-between px-3 cursor-move select-none shrink-0 text-mai-text font-mono bg-white/5 border-b border-white/5"
             onDoubleClick={onDoubleClick}
         >
-            <span className="font-bold tracking-wide text-lg">{title}</span>
+            <span className="font-bold tracking-tight text-sm uppercase pl-1">{title}</span>
             <div className="flex gap-2">
                 <button
-                    className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
+                    className="p-1.5 rounded-full hover:bg-mai-surface-dim hover:text-mai-sky transition-colors border-2 border-transparent hover:border-mai-sky"
                     onClick={onMinimize}
+                    title="Minimize"
                 >
-                    <Minus size={16} />
+                    <Minus size={14} />
                 </button>
                 <button
-                    className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
+                    className="p-1.5 rounded-full hover:bg-mai-surface-dim hover:text-mai-mint transition-colors border-2 border-transparent hover:border-mai-mint"
                     onClick={onMaximize}
+                    title="Maximize"
                 >
-                    {isMaximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                    {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
                 </button>
                 <button
-                    className="p-1.5 hover:bg-red-500 rounded-full transition-colors"
+                    className="p-1.5 rounded-full hover:bg-mai-rose hover:text-white transition-colors border-2 border-transparent hover:border-mai-rose"
                     onClick={onClose}
+                    title="Close"
                 >
-                    <X size={16} />
+                    <X size={14} />
                 </button>
             </div>
         </div>

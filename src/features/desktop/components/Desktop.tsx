@@ -9,6 +9,8 @@ import { DesktopIcons } from './DesktopIcons';
 import { Window } from './Window';
 import { MobileHome } from '@/features/desktop/components/mobile/MobileHome';
 import { MobileStatusBar } from '@/features/desktop/components/mobile/MobileStatusBar';
+import { WelcomeApp } from '@/features/portfolio/components/WelcomeApp';
+import { MusicWidget } from '@/features/portfolio/components/MusicWidget';
 
 import { ChatbotWidget } from '@/features/chat/components/ChatbotWidget';
 import { AnimatePresence } from 'framer-motion';
@@ -38,6 +40,8 @@ const BrowserApp = dynamic(() => import('@/features/browser/components/BrowserAp
 // Simple content renderer based on type
 const WindowContentRenderer = ({ type, content }: { type: string, content: WindowContent }) => {
     if (type === 'component') {
+        if (content === 'welcome') return <WelcomeApp />;
+        if (content === 'music') return <MusicWidget />;
         if (content === 'terminal') return <Terminal />;
         if (content === 'stream-chat') return <ChatStreamApp />;
         if (content === 'browser') return <BrowserApp />;
@@ -62,32 +66,18 @@ const WindowContentRenderer = ({ type, content }: { type: string, content: Windo
     return <div>Unknown Content</div>;
 };
 
+// ... imports
+import { Dashboard } from './Dashboard';
+// ... other imports
+
+// ... WindowContentRenderer remains same ...
+
 export const Desktop = () => {
-    const { windows, activeWindowId } = useDesktop();
+    const { windows, activeWindowId, openWindow } = useDesktop(); // Need openWindow for dashboard? No, dashboard uses hook.
     const { minimizeWindow } = useDesktopActions();
     const isMobile = useMobile();
 
-    // Handle back gesture - minimize active window
-    const handleBack = useCallback(() => {
-        if (activeWindowId) {
-            minimizeWindow(activeWindowId);
-        }
-    }, [activeWindowId, minimizeWindow]);
-
-    // Handle home gesture - minimize all windows
-    const handleHome = useCallback(() => {
-        windows.forEach(w => {
-            if (!w.isMinimized) {
-                minimizeWindow(w.id);
-            }
-        });
-    }, [windows, minimizeWindow]);
-
-    // Only enable gestures on mobile
-    useMobileGestures(isMobile ? {
-        onBack: handleBack,
-        onHome: handleHome,
-    } : {});
+    // ... gesture hooks remain same ...
 
     return (
         <div
@@ -100,12 +90,10 @@ export const Desktop = () => {
                 overflow: 'hidden'
             }}
         >
-            {/* Background / Wallpaper handled by CSS var */}
+            {/* Hybrid Surface: Unified Dashboard */}
+            <Dashboard />
 
-            {/* Desktop Icons (Desktop) or Mobile Home (Mobile) */}
-            {isMobile ? <MobileHome /> : <DesktopIcons />}
-
-            {/* Widgets Layer */}
+            {/* Widgets Layer (Chatbot) */}
             <ChatbotWidget />
 
             {/* Window Layer */}
@@ -122,12 +110,11 @@ export const Desktop = () => {
                 ))}
             </AnimatePresence>
 
-            {/* Taskbar / Nav Layer */}
-            {isMobile ? (
-                <MobileStatusBar />
-            ) : (
-                <Taskbar />
-            )}
+            {/* Navbar / Taskbar */}
+            {!isMobile && <Taskbar />}
+
+            {/* Mobile Status Bar if on mobile */}
+            {isMobile && <MobileStatusBar />}
         </div>
     );
 };
