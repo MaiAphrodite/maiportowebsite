@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useRef } from 'react';
 
-export type WindowContent = string | null | { app: string; initialPath?: string[] };
+export type WindowContent = string | null | { app: string; initialPath?: string[] } | 'welcome';
 
 export interface WindowState {
     id: string;
@@ -16,6 +16,7 @@ export interface WindowState {
     position: { x: number; y: number };
     previousPosition?: { x: number; y: number };
     size: { width: number; height: number };
+    variant?: 'default' | 'widget';
 }
 
 type Theme = 'light' | 'dark';
@@ -32,21 +33,29 @@ interface DesktopContextType {
     updateWindowPosition: (id: string, position: { x: number; y: number }) => void;
     updateWindowSize: (id: string, size: { width: number; height: number }) => void;
     toggleTheme: () => void;
+    isBooted: boolean;
+    setBooted: (value: boolean) => void;
 }
 
-const DesktopStateContext = createContext<Omit<DesktopContextType, 'openWindow' | 'closeWindow' | 'minimizeWindow' | 'toggleMaximizeWindow' | 'focusWindow' | 'updateWindowPosition' | 'updateWindowSize' | 'toggleTheme'> | undefined>(undefined);
-const DesktopDispatchContext = createContext<Pick<DesktopContextType, 'openWindow' | 'closeWindow' | 'minimizeWindow' | 'toggleMaximizeWindow' | 'focusWindow' | 'updateWindowPosition' | 'updateWindowSize' | 'toggleTheme'> | undefined>(undefined);
+const DesktopStateContext = createContext<Omit<DesktopContextType, 'openWindow' | 'closeWindow' | 'minimizeWindow' | 'toggleMaximizeWindow' | 'focusWindow' | 'updateWindowPosition' | 'updateWindowSize' | 'toggleTheme' | 'setBooted'> | undefined>(undefined);
+const DesktopDispatchContext = createContext<Pick<DesktopContextType, 'openWindow' | 'closeWindow' | 'minimizeWindow' | 'toggleMaximizeWindow' | 'focusWindow' | 'updateWindowPosition' | 'updateWindowSize' | 'toggleTheme' | 'setBooted'> | undefined>(undefined);
 
 export const DesktopProvider = ({ children }: { children: ReactNode }) => {
     const [windows, setWindows] = useState<WindowState[]>([]);
     const [activeWindowId, setActiveWindowId] = useState<string | null>(null);
     const [maxZIndex, setMaxZIndex] = useState(1);
     const [theme, setTheme] = useState<Theme>('dark'); // Default to Dark (Gamer vibe)
+    const [isBooted, setIsBooted] = useState(false);
+
+    const setBooted = React.useCallback((value: boolean) => {
+        setIsBooted(value);
+    }, []);
 
     // Initialize Theme from localStorage
     useEffect(() => {
         const savedTheme = localStorage.getItem('mai-theme') as Theme | null;
         if (savedTheme) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setTheme(savedTheme);
             document.documentElement.setAttribute('data-theme', savedTheme);
         } else {
@@ -178,19 +187,8 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     // Initialize Default Window
-    useEffect(() => {
-        const { windows: currentWindows } = stateRef.current;
-        const welcomeExists = currentWindows.some(w => w.id === 'welcome');
-        if (!welcomeExists && currentWindows.length === 0) {
-            openWindow({
-                id: 'welcome',
-                title: 'Welcome to MaiOS',
-                type: 'markdown',
-                content: `# Welcome to my Desktop! 🌸\n\nThis is my interactive portfolio.\n\n- Click icons to explore.\n- Drag windows around.\n- Ask the AI mascot for help!\n\n*(This is a functional prototype, not just a wireframe!)*`
-            });
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    // Initialize Default Widgets
+    // Removed: Widgets (Welcome, Music) are now embedded in the Unified Dashboard.
 
     // Memoize Actions - NOW STABLE
     const actions = useMemo(() => ({
@@ -201,11 +199,12 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
         focusWindow,
         updateWindowPosition,
         updateWindowSize,
-        toggleTheme
-    }), [openWindow, closeWindow, minimizeWindow, toggleMaximizeWindow, focusWindow, updateWindowPosition, updateWindowSize, toggleTheme]);
+        toggleTheme,
+        setBooted
+    }), [openWindow, closeWindow, minimizeWindow, toggleMaximizeWindow, focusWindow, updateWindowPosition, updateWindowSize, toggleTheme, setBooted]);
 
     return (
-        <DesktopStateContext.Provider value={{ windows, activeWindowId, theme }}>
+        <DesktopStateContext.Provider value={{ windows, activeWindowId, theme, isBooted }}>
             <DesktopDispatchContext.Provider value={actions}>
                 {children}
             </DesktopDispatchContext.Provider>

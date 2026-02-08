@@ -22,6 +22,8 @@
   --color-mai-text: var(--mai-text);
   --color-mai-subtext: var(--mai-subtext);
   --color-mai-border: var(--mai-border);
+  --color-rice-bg: var(--rice-bg);
+  --color-rice-panel: var(--rice-panel);
 }
 
 :root {
@@ -31,81 +33,169 @@
   --mai-secondary: #00FFFF;
   /* Cyan */
 
-  --mai-surface: rgba(255, 255, 255, 0.9);
-  --mai-surface-dim: rgba(255, 255, 255, 0.5);
+  --mai-surface: #FFF0F5;
+  /* Lavender Blush - Solid */
+  --mai-surface-dim: #FFE4E1;
+  /* Misty Rose */
 
-  --mai-text: #4A4A4A;
-  --mai-subtext: #6B7280;
+  --mai-text: #2D2D3A;
+  /* Dark Grey for contrast */
+  --mai-subtext: #595959;
 
-  --mai-border: #FFD1DC;
-  /* Pastel Pink Border */
+  --mai-border: #2D2D3A;
+  /* High Contrast Dark Border */
 
-  /* Desktop Background Gradient */
-  --desktop-bg: linear-gradient(135deg, #FDFDD0 0%, #FFD1DC 100%);
+  /* Rice Specifics */
+  --rice-bg: #FDFDD0;
+  /* Pastel Yellow Background */
+  --rice-panel: #FFFFFF;
+  --rice-shadow: #2D2D3A;
+
+  /* Desktop Background */
+  --desktop-bg: var(--rice-bg);
 
   /* Boot Screen Variables (Light) */
   --boot-title: #2D2D3A;
-  --boot-card-bg: rgba(255, 255, 255, 0.7);
-  --boot-dots: #FFB6C1;
-  --boot-hearts: #FFB6C1;
-  --boot-progress-bg: rgba(255, 255, 255, 0.6);
-  --boot-progress-fill: linear-gradient(90deg, #FF69B4 0%, #FFB6C1 100%);
+  --boot-card-bg: #FFFFFF;
+  --boot-dots: #FF69B4;
+  --boot-hearts: #FF69B4;
+  --boot-progress-bg: #E0E0E0;
+  --boot-progress-fill: #FF69B4;
   --boot-footer: #9CA3AF;
 }
 
 [data-theme='dark'] {
-  /* DARK THEME (Gamer/Night) */
+  /* DARK THEME (Rice/Night) */
   --mai-primary: #FF69B4;
-  /* Keep Brand Pink */
   --mai-secondary: #00FFFF;
-  /* Keep Brand Cyan */
 
-  --mai-surface: rgba(45, 45, 58, 0.95);
-  /* #2D2D3A */
-  --mai-surface-dim: rgba(30, 30, 46, 0.8);
+  /* Kawaii Hyprland Rice - Catppuccin Mocha */
+  --rice-bg: #1e1e2e;
+  /* Base */
+  --rice-panel: #1e1e2e;
+  /* Base (for glass) */
+  --rice-overlay: #313244;
+  /* Surface0 */
 
-  --mai-text: #E0E0E0;
-  --mai-subtext: #A0A0A0;
+  /* Catppuccin Mocha Corrected */
+  --mai-primary: #f5c2e7;
+  /* Rosewater (Soft Pink) - Main Accent */
+  --mai-secondary: #89b4fa;
+  /* Blue - Tech Accent */
+  --mai-accent: #cba6f7;
+  /* Mauve - Secondary Accent */
+  --mai-success: #a6e3a1;
+  /* Green */
+  --mai-warning: #f9e2af;
+  /* Yellow */
+  --mai-error: #f38ba8;
+  /* Red */
 
-  --mai-border: #FF69B4;
-  /* Neon Pink Border */
+  --mai-text: #cdd6f4;
+  /* Text */
+  --mai-subtext: #a6adc8;
+  /* Subtext0 */
+  --mai-border: #f5c2e7;
+  /* Rosewater Border */
 
-  --desktop-bg: linear-gradient(135deg, #1E1E2E 0%, #181825 100%);
+  --mai-surface: #313244;
+  /* Surface0 */
+  --mai-surface-dim: #181825;
+  /* Crust */
 
-  /* Boot Screen Variables (Dark) */
-  --boot-title: #E0E0E0;
+  /* Boot Splash Map */
+  --desktop-bg: var(--rice-bg);
+  --boot-title: var(--mai-primary);
+  --boot-subtext: var(--mai-secondary);
   --boot-card-bg: rgba(30, 30, 46, 0.8);
-  --boot-dots: #FF69B4;
-  --boot-hearts: #FF69B4;
-  --boot-progress-bg: rgba(30, 30, 46, 0.8);
-  --boot-progress-fill: linear-gradient(90deg, #FF69B4 0%, #00FFFF 100%);
-  --boot-footer: #6B7280;
+  /* Glassy Base */
+  --boot-progress-bg: var(--mai-surface-dim);
+  --boot-progress-fill: var(--mai-primary);
+  --boot-footer: var(--mai-subtext);
+  --boot-dots: var(--mai-surface);
+  --boot-hearts: var(--mai-primary);
 }
 
 body {
+  background: var(--rice-bg);
+  /* Optional: Add a subtle anime wallpaper URL here if available, otherwise solid color */
   color: var(--mai-text);
-  background: var(--desktop-bg);
-  font-family: var(--font-mplus), 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow: hidden;
-  height: 100vh;
-  width: 100vw;
-  transition: color 0.3s ease;
+  font-family: 'JetBrains Mono', var(--font-mplus), monospace;
 }
 
 /* Utilities */
-.glass-panel {
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
   background: var(--mai-surface);
-  border: 4px solid var(--mai-border);
-  border-radius: 16px;
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  border-radius: 99px;
+  border: 2px solid var(--rice-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--mai-primary);
+}
+
+/* --- RICE UTILITIES --- */
+
+/* Glassmorphism: The "Rice" Look */
+.glass-panel {
+  background: rgba(30, 30, 46, 0.75) !important;
+  /* Mocha Base with transparency */
+  backdrop-filter: blur(12px) !important;
+  /* Heavy Blur */
+  border: 2px solid rgba(245, 194, 231, 0.3) !important;
+  /* Rosewater 30% */
+  border-radius: 20px !important;
+  /* Smooth 20px */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+  /* Deep soft shadow */
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.glass-panel:hover {
+  border-color: rgba(245, 194, 231, 0.6) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Waybar Module Style */
+.waybar-module {
+  background: rgba(49, 50, 68, 0.8);
+  /* Surface0 Glass */
+  backdrop-filter: blur(8px);
+  border: 2px solid transparent;
+  border-radius: 99px;
+  /* Pill */
+  padding: 0 16px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.waybar-module:hover {
+  background: rgba(69, 71, 90, 0.9);
+  /* Surface1 */
+  border-color: var(--mai-primary);
+  transform: translateY(-2px);
 }
 
 .window-shadow {
-  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.2);
+  box-shadow: none !important;
 }
 
 .desktop-container {
+  border-radius: 0;
+  /* Hyprland usually has full screen or gaps */
   position: relative;
   width: 100vw;
   height: 100vh;
@@ -113,6 +203,7 @@ body {
   background: var(--desktop-bg);
   /* Fallback uses var, browser handles it */
   transition: background 0.5s ease;
+  border-radius: 24px;
 }
 
 /* --- CUTE SCROLLBARS --- */
@@ -247,4 +338,23 @@ body {
 
 .animate-blink {
   animation: blink 1s step-end infinite;
+}
+
+/* --- MARQUEE --- */
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }

@@ -110,7 +110,7 @@ const TurnstileVerification = React.memo(({
     if (mode === 'managed') {
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                <div className="bg-mai-surface border-2 border-mai-border rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 flex flex-col items-center gap-4 text-center animate-in zoom-in-95 duration-200">
+                <div className="bg-mai-surface border-2 border-mai-border rounded-2xl shadow-none p-6 max-w-sm w-full mx-4 flex flex-col items-center gap-4 text-center animate-in zoom-in-95 duration-200">
                     {status === 'failed' ? (
                         <>
                             <div className="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center mb-2">
@@ -125,8 +125,8 @@ const TurnstileVerification = React.memo(({
                         </>
                     ) : (
                         <>
-                            <div className="w-12 h-12 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center mb-2">
-                                {status === 'loading' ? (<RotateCw size={24} className="animate-spin text-pink-500" />) : (<span className="text-2xl">🛡️</span>)}
+                            <div className="w-12 h-12 rounded-full bg-mai-primary/20 text-mai-primary flex items-center justify-center mb-2">
+                                {status === 'loading' ? (<RotateCw size={24} className="animate-spin text-mai-primary" />) : (<span className="text-2xl">🛡️</span>)}
                             </div>
                             <h3 className="text-lg font-bold text-mai-text">Security Check</h3>
                             <p className="text-sm text-mai-subtext mb-2">Please complete the verification below to continue chatting.</p>
@@ -223,23 +223,23 @@ const StreamFeed = React.memo(({
     const words = React.useMemo(() => pagedSubtitle ? pagedSubtitle.split(' ') : [], [pagedSubtitle]);
 
     return (
-        <div className={`relative bg-mai-surface-dim flex flex-col justify-center items-center overflow-hidden group aspect-video rounded-xl border-2 border-mai-border ${isCompact ? 'shrink-0 mx-3 mt-3' : 'flex-1 min-w-0 max-h-full m-3'}`}>
-            <div className="absolute top-3 left-3 bg-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-full z-10 flex items-center gap-1.5">
+        <div className={`relative bg-mai-surface-dim/90 backdrop-blur-sm flex flex-col justify-center items-center overflow-hidden group aspect-video rounded-2xl border-2 border-mai-border/30 ${isCompact ? 'shrink-0 mx-3 mt-3' : 'flex-1 min-w-0 max-h-full m-3'}`}>
+            <div className="absolute top-3 left-3 bg-mai-primary text-black text-xs font-bold px-3 py-1.5 rounded-full z-10 flex items-center gap-1.5 border border-black/10">
                 <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                 LIVE
             </div>
             <div className="absolute top-3 right-3 bg-mai-surface text-mai-text text-xs font-medium px-3 py-1.5 rounded-full z-10 flex items-center gap-1.5 border-2 border-mai-border">
-                <span className="text-pink-500">♡</span> 1.2k watching
+                <span className="text-mai-primary">♡</span> 1.2k watching
             </div>
             <div className="relative w-full h-full flex items-center justify-center">
                 <div className="relative w-full h-full">
                     <Image src="/assets/streamsimple.png" alt="Mai Live" fill className="object-contain" priority />
                 </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-12 bg-mai-surface/95 opacity-0 group-hover:opacity-100 transition-opacity flex items-center px-4 gap-4 rounded-b-xl">
+            <div className="absolute bottom-0 left-0 right-0 h-12 bg-mai-surface/95 opacity-0 group-hover:opacity-100 transition-opacity flex items-center px-4 gap-4 rounded-b-2xl">
                 <Button variant="ghost" size="icon" className="text-mai-text hover:text-mai-primary hover:bg-transparent"><Maximize2 size={18} /></Button>
-                <div className="flex-1 h-1.5 bg-mai-surface-dim rounded-full overflow-hidden">
-                    <div className="w-full h-full bg-pink-400 rounded-full" />
+                <div className="flex-1 h-1.5 bg-mai-surface-dim rounded-full overflow-hidden border border-mai-border/30">
+                    <div className="w-full h-full bg-mai-primary rounded-full" />
                 </div>
             </div>
             {words.length > 0 && (
@@ -316,15 +316,15 @@ const ChatSidebar = React.memo(({
     }, [displayMessages.length]);
 
     return (
-        <div className={`bg-mai-surface flex flex-col overflow-hidden border-2 border-mai-border rounded-xl ${isCompact ? 'flex-1 min-h-0 mx-3 mb-3' : 'w-[300px] flex-none min-h-0 my-3 mr-3'}`}>
-            <div className="p-3 border-b-2 border-mai-border flex justify-between items-center shrink-0 relative">
+        <div className={`bg-mai-surface/90 backdrop-blur-md flex flex-col overflow-hidden border border-mai-border/30 rounded-2xl ${isCompact ? 'flex-1 min-h-0 mx-3 mb-3' : 'w-[300px] flex-none min-h-0 my-3 mr-3'}`}>
+            <div className="p-3 border-b border-mai-border/20 flex justify-between items-center shrink-0 relative">
                 <span className="text-mai-text font-semibold flex items-center gap-2">💬 Chat</span>
                 <Button variant="ghost" size="icon" className="w-6 h-6 text-mai-subtext hover:text-mai-text" onClick={() => setMenuOpen(!menuOpen)}><MoreHorizontal size={16} /></Button>
                 {menuOpen && (
                     <>
                         <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                        <div className="absolute right-0 top-full mt-1 bg-mai-surface border-2 border-mai-border rounded-xl shadow-lg z-50 min-w-[180px] overflow-hidden">
-                            <button onClick={() => { setShowAiReplies(!showAiReplies); setMenuOpen(false); }} className="w-full px-3 py-2.5 flex items-center gap-2 text-sm text-mai-text hover:bg-mai-surface-dim transition-colors text-left">
+                        <div className="absolute right-0 top-full mt-1 bg-mai-surface border-2 border-mai-border rounded-xl shadow-none z-50 min-w-[180px] overflow-hidden">
+                            <button onClick={() => { setShowAiReplies(!showAiReplies); setMenuOpen(false); }} className="w-full px-3 py-2.5 flex items-center gap-2 text-sm text-mai-text hover:bg-mai-surface-dim transition-colors text-left border-b border-mai-border/20">
                                 {showAiReplies ? <Eye size={14} /> : <EyeOff size={14} />} <span>{showAiReplies ? 'Showing AI replies' : 'AI replies hidden'}</span>
                             </button>
                             <button onClick={() => { onVoiceToggle(); setMenuOpen(false); }} className="w-full px-3 py-2.5 flex items-center gap-2 text-sm text-mai-text hover:bg-mai-surface-dim transition-colors text-left">
@@ -337,16 +337,16 @@ const ChatSidebar = React.memo(({
             {isCompact && (
                 <div className="px-3 py-2 border-b-2 border-mai-border bg-mai-surface shrink-0">
                     <form onSubmit={handleSubmit} className="flex gap-2 min-w-0">
-                        <Input ref={inputRef} type="text" value={input} onChange={handleInputChange} placeholder={token ? "Say something cute~" : "Verifying..."} className="flex-1 min-w-0 bg-mai-surface-dim text-mai-text rounded-full px-4 py-2.5 text-sm focus-visible:ring-mai-primary border-2 border-mai-border disabled:opacity-50 placeholder:text-mai-subtext transition-all h-auto" disabled={!token} />
-                        <Button type="submit" disabled={isLoading || !input.trim() || !token} variant="default" size="icon" className="bg-pink-400 hover:bg-pink-500 text-white rounded-full shrink-0"><Send size={16} /></Button>
-                        <Button variant="ghost" size="icon" type="button" className="text-mai-subtext hover:text-pink-500 hover:bg-transparent shrink-0"><Heart size={18} /></Button>
+                        <Input ref={inputRef} type="text" value={input} onChange={handleInputChange} placeholder={token ? "Say something cute~" : "Verifying..."} className="flex-1 min-w-0 bg-mai-surface-dim text-mai-text rounded-2xl px-4 py-2.5 text-sm focus-visible:ring-mai-primary border-2 border-mai-border disabled:opacity-50 placeholder:text-mai-subtext transition-all h-auto" disabled={!token} />
+                        <Button type="submit" disabled={isLoading || !input.trim() || !token} variant="default" size="icon" className="bg-mai-primary hover:bg-mai-primary/80 text-black border border-black/10 rounded-2xl shrink-0"><Send size={16} /></Button>
+                        <Button variant="ghost" size="icon" type="button" className="text-mai-subtext hover:text-mai-primary hover:bg-transparent shrink-0"><Heart size={18} /></Button>
                     </form>
                     {!token && (<div className="flex justify-center pt-2"><TurnstileVerification onSuccess={setToken} onError={() => setToken(null)} /></div>)}
                 </div>
             )}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 <div className="flex gap-2 items-start opacity-80">
-                    <div className="w-6 h-6 rounded-full bg-pink-400 flex-shrink-0 flex items-center justify-center text-[10px] text-white font-bold">✦</div>
+                    <div className="w-6 h-6 rounded-full bg-mai-primary flex-shrink-0 flex items-center justify-center text-[10px] text-black font-bold border border-black/10">✦</div>
                     <div className="flex-1 min-w-0"><span className="text-mai-primary text-xs font-semibold mr-2">System</span><span className="text-mai-subtext text-sm">Welcome! Say hello to Mai~ ♡</span></div>
                 </div>
                 {displayMessages.map((msg: ChatMessage) => {
@@ -354,7 +354,7 @@ const ChatSidebar = React.memo(({
                     const isLastUserMsg = isUser && msg.id === userMessages[userMessages.length - 1]?.id;
                     return (
                         <div key={msg.id} className="flex gap-2 items-start">
-                            <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] text-white font-bold ${isUser ? 'bg-blue-400' : 'bg-pink-400'}`}>{isUser ? 'You' : '♡'}</div>
+                            <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] text-black font-bold border border-black/10 ${isUser ? 'bg-mai-secondary' : 'bg-mai-primary'}`}>{isUser ? 'You' : '♡'}</div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
                                     <span className={`text-xs font-semibold ${isUser ? 'text-mai-secondary' : 'text-mai-primary'}`}>{isUser ? 'You' : 'Mai'}</span>
@@ -372,9 +372,9 @@ const ChatSidebar = React.memo(({
             {!isCompact && (
                 <div className="px-3 pt-2 border-t-2 border-mai-border bg-mai-surface relative" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
                     <form onSubmit={handleSubmit} className="flex gap-2 min-w-0">
-                        <Input ref={inputRef} type="text" value={input} onChange={handleInputChange} placeholder={token ? "Say something cute~" : "Verifying..."} className="flex-1 min-w-0 bg-mai-surface-dim text-mai-text rounded-full px-4 py-2.5 text-sm focus-visible:ring-mai-primary border-2 border-mai-border disabled:opacity-50 placeholder:text-mai-subtext transition-all h-auto" disabled={!token} />
-                        <Button type="submit" disabled={isLoading || !input.trim() || !token} variant="default" size="icon" className="bg-pink-400 hover:bg-pink-500 text-white rounded-full shrink-0"><Send size={16} /></Button>
-                        <Button variant="ghost" size="icon" type="button" className="text-mai-subtext hover:text-pink-500 hover:bg-transparent shrink-0"><Heart size={18} /></Button>
+                        <Input ref={inputRef} type="text" value={input} onChange={handleInputChange} placeholder={token ? "Say something cute~" : "Verifying..."} className="flex-1 min-w-0 bg-mai-surface-dim text-mai-text rounded-2xl px-4 py-2.5 text-sm focus-visible:ring-mai-primary border-2 border-mai-border disabled:opacity-50 placeholder:text-mai-subtext transition-all h-auto" disabled={!token} />
+                        <Button type="submit" disabled={isLoading || !input.trim() || !token} variant="default" size="icon" className="bg-mai-primary hover:bg-mai-primary/80 text-black border border-black/10 rounded-2xl shrink-0"><Send size={16} /></Button>
+                        <Button variant="ghost" size="icon" type="button" className="text-mai-subtext hover:text-mai-primary hover:bg-transparent shrink-0"><Heart size={18} /></Button>
                     </form>
                     {!token && (<div className="absolute bottom-full left-0 right-0 flex justify-center pb-2 pointer-events-auto"><TurnstileVerification onSuccess={setToken} onError={() => setToken(null)} /></div>)}
                 </div>
@@ -475,14 +475,14 @@ export const ChatStreamApp = () => {
             <div className="bg-mai-surface px-4 py-2.5 flex items-center justify-between border-b-2 border-mai-border shrink-0">
                 <div className="flex items-center gap-4 flex-1">
                     <div className="flex gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-pink-400" />
-                        <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                        <div className="w-3 h-3 rounded-full bg-green-400" />
+                        <div className="w-3 h-3 rounded-full bg-mai-primary border border-black/10" />
+                        <div className="w-3 h-3 rounded-full bg-yellow-400 border border-black/10" />
+                        <div className="w-3 h-3 rounded-full bg-green-400 border border-black/10" />
                     </div>
-                    <div className="flex-1 max-w-xl mx-4 bg-mai-surface-dim rounded-xl px-4 py-1.5 text-xs text-mai-subtext flex items-center gap-2 border-2 border-mai-border">
-                        <span className="text-pink-500">♡</span>
+                    <div className="flex-1 max-w-xl mx-4 bg-mai-surface-dim rounded-2xl px-4 py-1.5 text-xs text-mai-subtext flex items-center gap-2 border-2 border-mai-border">
+                        <span className="text-mai-primary">♡</span>
                         <span className="text-mai-text font-medium">mai.stream/live</span>
-                        <span className="ml-auto text-[10px] bg-gradient-to-r from-pink-400 to-rose-400 text-white px-2 py-0.5 rounded-xl">LIVE</span>
+                        <span className="ml-auto text-[10px] bg-mai-primary text-black px-2 py-0.5 rounded-md font-bold border border-black/10">LIVE</span>
                     </div>
                 </div>
             </div>

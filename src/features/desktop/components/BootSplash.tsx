@@ -2,16 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useDesktopActions } from '@/features/desktop/context/DesktopContext';
 
 const BOOT_MESSAGES = [
-    "Waking up Mai...",
-    "Preparing your cozy space...",
-    "Loading cute things...",
-    "Almost ready~",
-    "Welcome back! ♡"
+    "Initializing Portfolio Protocol...",
+    "Loading Mai's World...",
+    "Curating Cute Things...",
+    "Preparing Showcase...",
+    "Welcome to Mai's Portfolio! ♡"
 ];
 
 export const BootSplash = () => {
+    const { setBooted } = useDesktopActions();
     const [loadProgress, setLoadProgress] = useState(0);
     const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
     const [displayedText, setDisplayedText] = useState("");
@@ -98,11 +100,14 @@ export const BootSplash = () => {
         if (loadProgress >= 100 && displayedText === BOOT_MESSAGES[BOOT_MESSAGES.length - 1]) {
             const fadeTimer = setTimeout(() => {
                 setIsFadingOut(true);
-                setTimeout(() => setIsComplete(true), 600);
+                setTimeout(() => {
+                    setIsComplete(true);
+                    setBooted(true);
+                }, 600);
             }, 500);
             return () => clearTimeout(fadeTimer);
         }
-    }, [loadProgress, displayedText]);
+    }, [loadProgress, displayedText, setBooted]);
 
     if (isComplete) return null;
 
@@ -136,12 +141,11 @@ export const BootSplash = () => {
                     className="relative w-36 h-36 md:w-44 md:h-44"
                     style={{ animation: 'gentle-float 2.5s ease-in-out infinite' }}
                 >
-                    <div className="absolute inset-0 rounded-full bg-white/5 backdrop-blur-sm -z-10" />
                     <Image
                         src="/assets/maiveclogo.png"
                         alt="Mai"
                         fill
-                        className="object-contain drop-shadow-xl"
+                        className="object-contain"
                         priority
                         sizes="(max-width: 768px) 144px, 176px"
                     />
@@ -165,15 +169,16 @@ export const BootSplash = () => {
 
             {/* Current message */}
             <div
-                className="mb-8 px-6 py-3 rounded-2xl"
+                className="mb-8 px-8 py-4 rounded-3xl"
                 style={{
                     background: 'var(--boot-card-bg)',
                     border: '2px solid var(--mai-border)',
+                    boxShadow: 'none',
                     minWidth: '280px',
                     textAlign: 'center'
                 }}
             >
-                <span style={{ color: 'var(--mai-text)', fontSize: '0.95rem' }}>
+                <span style={{ color: 'var(--mai-text)', fontSize: '0.95rem', fontWeight: 'bold' }}>
                     {displayedText || BOOT_MESSAGES[currentMessageIndex]}
                     {loadProgress < 100 && (
                         <span className="animate-pulse" style={{ color: 'var(--mai-primary)' }}> ●</span>
@@ -184,7 +189,7 @@ export const BootSplash = () => {
             {/* Progress bar */}
             <div className="w-64 md:w-80">
                 <div
-                    className="h-3 rounded-full overflow-hidden"
+                    className="h-4 rounded-full overflow-hidden"
                     style={{
                         background: 'var(--boot-progress-bg)',
                         border: '2px solid var(--mai-border)'
@@ -198,7 +203,7 @@ export const BootSplash = () => {
                         }}
                     />
                 </div>
-                <div className="text-center mt-3" style={{ color: 'var(--boot-footer)', fontSize: '0.75rem' }}>
+                <div className="text-center mt-3 font-mono" style={{ color: 'var(--boot-footer)', fontSize: '0.75rem' }}>
                     {Math.round(loadProgress)}%
                 </div>
             </div>
