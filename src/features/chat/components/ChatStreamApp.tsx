@@ -3,14 +3,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { Send, MoreHorizontal, Heart, RotateCw, Maximize2, Eye, EyeOff, RefreshCw, AlertCircle, Volume2, VolumeX } from 'lucide-react';
-import { useTTS } from '@/hooks/useTTS';
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { useDesktopActions, useDesktopState } from '@/features/desktop';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
 import { useChatContext } from '@/features/chat/context/ChatContext';
 import { useTyper } from '@/features/chat/hooks/useTyper';
-import { VoiceActivationModal } from './VoiceActivationModal';
+import { useTTS } from '@/features/chat/hooks/useTTS';
 
 // Resilient Turnstile Verification Component
 const TurnstileVerification = React.memo(({
@@ -163,7 +162,6 @@ const SubtitleWord = React.memo(({ word }: { word: string }) => (
 ));
 SubtitleWord.displayName = 'SubtitleWord';
 
-// Sub-component: Stream Feed (Handles High Frequency Typing Updates)
 const StreamFeed = React.memo(({
     latestAssistantMessage,
     isCompact,
@@ -391,145 +389,47 @@ export const ChatStreamApp = () => {
     const userMessages = messages.filter((m: ChatMessage) => m.role === 'user');
     const latestAssistantMessage = [...messages].reverse().find((m: ChatMessage) => m.role === 'assistant');
 
-    // Voice activation modal state
-    const [showVoiceModal, setShowVoiceModal] = useState(false);
-    const [ttsProgress, setTtsProgress] = useState(0);
-    const [ttsError, setTtsError] = useState<string | undefined>(undefined);
-
-    const [spokenTranscript, setSpokenTranscript] = useState('');
-    const { speak, reset: resetTTS, isReady: ttsIsReady } = useTTS({
-        onSpeakStart: (text) => {
-            setSpokenTranscript(prev => {
-                if (!prev) return text;
-                if (prev.endsWith(text)) return prev;
-                return `${prev} ${text}`;
-            });
-        },
-        onProgress: (percent) => setTtsProgress(percent),
-        onReady: () => {
-            setTtsProgress(100);
-            // Enable voice mode after TTS is ready
-            if (showVoiceModal) {
-                setIsVoiceEnabled(true);
-            }
-        },
-        onError: (error) => setTtsError(error)
+    // TTS Hook
+    const { processText, flush, stop: stopTTS } = useTTS({
+        enabled: isVoiceEnabled,
     });
 
-    // Streaming state refs
-    const lastSpokenIndexRef = useRef(0);
-    const displayedMessageIdRef = useRef<string | null>(null);
-    // Track which message was showing when voice was enabled (to prevent re-speaking)
-    const voiceEnabledAtMessageIdRef = useRef<string | null>(null);
-
-    // Reset spoken transcript when a new message starts
+    // Feed text to TTS when displayed text changes
     useEffect(() => {
-        if (latestAssistantMessage?.id && displayedMessageIdRef.current !== latestAssistantMessage.id) {
-            displayedMessageIdRef.current = latestAssistantMessage.id;
-            setTimeout(() => setSpokenTranscript(''), 0);
+        if (isVoiceEnabled && latestAssistantMessage) {
+            // Extract text content from message
+            let text = latestAssistantMessage.content || '';
+            if (latestAssistantMessage.parts) {
+                text = latestAssistantMessage.parts
+                    .filter(p => p.type === 'text')
+                    .map(p => p.text)
+                    .join('');
+            }
+            if (text) {
+                processText(text);
+            }
         }
-    }, [latestAssistantMessage?.id]);
+    }, [latestAssistantMessage, isVoiceEnabled, processText]);
 
-    // Track when voice mode is enabled to prevent re-speaking existing messages
+    // Stop TTS if loading starts (new message)
     useEffect(() => {
-        if (isVoiceEnabled && !voiceEnabledAtMessageIdRef.current) {
-            voiceEnabledAtMessageIdRef.current = latestAssistantMessage?.id || null;
-        } else if (!isVoiceEnabled) {
-            voiceEnabledAtMessageIdRef.current = null;
-        }
-    }, [isVoiceEnabled, latestAssistantMessage?.id]);
-
-    // Handle voice toggle with modal
-    const handleVoiceToggle = useCallback(() => {
-        if (isVoiceEnabled) {
-            // Turning off - just disable
-            setIsVoiceEnabled(false);
+        if (isLoading) {
+            // Optional: Stop previous speech?
+            // stopTTS();
         } else {
-            // Turning on - show modal if not ready, otherwise enable
-            if (ttsIsReady) {
-                voiceEnabledAtMessageIdRef.current = latestAssistantMessage?.id || null;
-                setIsVoiceEnabled(true);
-            } else {
-                setShowVoiceModal(true);
-                setTtsError(undefined);
+            // Stream finished, flush any remaining text
+            if (isVoiceEnabled) {
+                flush();
             }
         }
-    }, [isVoiceEnabled, ttsIsReady, latestAssistantMessage?.id, setIsVoiceEnabled]);
-
-    const getMessageContent = (msg?: ChatMessage) => {
-        if (!msg) return '';
-        if (msg.content) return msg.content;
-        if (msg.parts) {
-            return msg.parts.filter((p: MessagePart) => p.type === 'text').map((p: MessagePart) => p.text).join('');
-        }
-        return '';
-    };
-
-    // Streaming sentence dispatch: speak sentences AS they arrive
-    useEffect(() => {
-        if (!latestAssistantMessage || latestAssistantMessage.role !== 'assistant') {
-            lastSpokenIndexRef.current = 0;
-            return;
-        }
-
-        // Reset on new message
-        if (latestAssistantMessage.id !== displayedMessageIdRef.current) {
-            displayedMessageIdRef.current = latestAssistantMessage.id;
-            lastSpokenIndexRef.current = 0;
-        }
-
-        if (!isVoiceEnabled) return;
-
-        // Don't speak messages that existed before voice was enabled
-        if (voiceEnabledAtMessageIdRef.current === latestAssistantMessage.id) return;
-
-        const fullText = getMessageContent(latestAssistantMessage);
-        const unspokenText = fullText.slice(lastSpokenIndexRef.current);
-
-        // Look for natural break points: commas, semicolons, colons, dashes, or sentence-ending punctuation
-        // This produces shorter phrases for lower latency
-        const phraseMatch = unspokenText.match(/([,;:\-—.!?]+)(\s)/);
-
-        if (phraseMatch && phraseMatch.index !== undefined) {
-            const endIndex = phraseMatch.index + phraseMatch[0].length;
-            const phrase = unspokenText.slice(0, endIndex).trim();
-
-            // Only speak phrases with at least 3 words (avoid tiny fragments)
-            const wordCount = phrase.split(/\s+/).length;
-            if (phrase && wordCount >= 3) {
-                console.log(`[TTS] Streaming phrase (${wordCount} words): "${phrase.slice(0, 40)}..."`);
-                speak(phrase);
-                lastSpokenIndexRef.current += endIndex;
-            } else if (endIndex > 50) {
-                // If phrase is too short but we've buffered a lot, speak anyway
-                console.log(`[TTS] Streaming fragment: "${phrase.slice(0, 40)}..."`);
-                speak(phrase);
-                lastSpokenIndexRef.current += endIndex;
-            }
-        }
-    }, [latestAssistantMessage, isVoiceEnabled, speak]);
-
-    // Flush remaining text when streaming ends
-    useEffect(() => {
-        if (status !== 'streaming' && status !== 'submitted' && latestAssistantMessage && isVoiceEnabled) {
-            const fullText = getMessageContent(latestAssistantMessage);
-            if (fullText.length > lastSpokenIndexRef.current) {
-                const remaining = fullText.slice(lastSpokenIndexRef.current).trim();
-                if (remaining) {
-                    console.log(`[TTS] Flush remaining: "${remaining.slice(0, 40)}..."`);
-                    speak(remaining);
-                    lastSpokenIndexRef.current = fullText.length;
-                }
-            }
-        }
-    }, [status, latestAssistantMessage, isVoiceEnabled, speak]);
+    }, [isLoading, isVoiceEnabled, flush]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => { setInput(e.target.value); };
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!input.trim()) return;
         // Reset TTS state for fresh turn (prevents progressive degradation)
-        resetTTS();
+        resetTTS?.(); // Use reset from hook if available, otherwise ignore
         try { await sendMessage({ text: input }); setInput(''); } catch (error) { console.error("Start stream error:", error); }
     };
 
@@ -538,8 +438,6 @@ export const ChatStreamApp = () => {
     const { updateWindowSize } = useDesktopActions();
     const { windows } = useDesktopState();
     const chatWindow = windows.find(w => w.id === 'chat-stream');
-
-
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -564,44 +462,55 @@ export const ChatStreamApp = () => {
         return () => resizeObserver.disconnect();
     }, [chatWindow, updateWindowSize]);
 
+    // Simple voice toggle handler
+    const handleVoiceToggle = useCallback(() => {
+        setIsVoiceEnabled(!isVoiceEnabled);
+    }, [isVoiceEnabled, setIsVoiceEnabled]);
+
+    // Dummy resetTTS if not returned by hook
+    const resetTTS = () => { stopTTS(); };
+
     return (
-        <>
-            <VoiceActivationModal
-                isOpen={showVoiceModal}
-                progress={ttsProgress}
-                isReady={ttsIsReady}
-                error={ttsError}
-                onClose={() => {
-                    setShowVoiceModal(false);
-                    if (ttsIsReady) {
-                        voiceEnabledAtMessageIdRef.current = latestAssistantMessage?.id || null;
-                    }
-                }}
-                onRetry={() => {
-                    setTtsError(undefined);
-                    setTtsProgress(0);
-                }}
-            />
-            <div ref={containerRef} className="flex flex-col h-full w-full bg-mai-surface-dim text-mai-text overflow-hidden">
-                <div className="bg-mai-surface px-4 py-2.5 flex items-center justify-between border-b-2 border-mai-border shrink-0">
-                    <div className="flex items-center gap-4 flex-1">
-                        <div className="flex gap-1.5">
-                            <div className="w-3 h-3 rounded-full bg-pink-400" />
-                            <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                            <div className="w-3 h-3 rounded-full bg-green-400" />
-                        </div>
-                        <div className="flex-1 max-w-xl mx-4 bg-mai-surface-dim rounded-xl px-4 py-1.5 text-xs text-mai-subtext flex items-center gap-2 border-2 border-mai-border">
-                            <span className="text-pink-500">♡</span>
-                            <span className="text-mai-text font-medium">mai.stream/live</span>
-                            <span className="ml-auto text-[10px] bg-gradient-to-r from-pink-400 to-rose-400 text-white px-2 py-0.5 rounded-xl">LIVE</span>
-                        </div>
+        <div ref={containerRef} className="flex flex-col h-full w-full bg-mai-surface-dim text-mai-text overflow-hidden">
+            <div className="bg-mai-surface px-4 py-2.5 flex items-center justify-between border-b-2 border-mai-border shrink-0">
+                <div className="flex items-center gap-4 flex-1">
+                    <div className="flex gap-1.5">
+                        <div className="w-3 h-3 rounded-full bg-pink-400" />
+                        <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                        <div className="w-3 h-3 rounded-full bg-green-400" />
+                    </div>
+                    <div className="flex-1 max-w-xl mx-4 bg-mai-surface-dim rounded-xl px-4 py-1.5 text-xs text-mai-subtext flex items-center gap-2 border-2 border-mai-border">
+                        <span className="text-pink-500">♡</span>
+                        <span className="text-mai-text font-medium">mai.stream/live</span>
+                        <span className="ml-auto text-[10px] bg-gradient-to-r from-pink-400 to-rose-400 text-white px-2 py-0.5 rounded-xl">LIVE</span>
                     </div>
                 </div>
-                <div className={`flex-1 flex overflow-hidden ${isCompact ? 'flex-col' : 'flex-row'}`}>
-                    <StreamFeed latestAssistantMessage={latestAssistantMessage} isCompact={isCompact} isVoiceEnabled={isVoiceEnabled} spokenText={spokenTranscript} />
-                    <ChatSidebar allMessages={messages} userMessages={userMessages} messageTimestamps={messageTimestamps} status={status} isLoading={isLoading} token={token} setToken={setToken} input={input} handleInputChange={handleInputChange} handleSubmit={handleSubmit} isCompact={isCompact} showAiReplies={showAiReplies} setShowAiReplies={setShowAiReplies} isVoiceEnabled={isVoiceEnabled} onVoiceToggle={handleVoiceToggle} />
-                </div>
             </div>
-        </>
+            <div className={`flex-1 flex overflow-hidden ${isCompact ? 'flex-col' : 'flex-row'}`}>
+                <StreamFeed
+                    latestAssistantMessage={latestAssistantMessage}
+                    isCompact={isCompact}
+                    isVoiceEnabled={isVoiceEnabled}
+                    spokenText={undefined}
+                />
+                <ChatSidebar
+                    allMessages={messages}
+                    userMessages={userMessages}
+                    messageTimestamps={messageTimestamps}
+                    status={status}
+                    isLoading={isLoading}
+                    token={token}
+                    setToken={setToken}
+                    input={input}
+                    handleInputChange={handleInputChange}
+                    handleSubmit={handleSubmit}
+                    isCompact={isCompact}
+                    showAiReplies={showAiReplies}
+                    setShowAiReplies={setShowAiReplies}
+                    isVoiceEnabled={isVoiceEnabled}
+                    onVoiceToggle={handleVoiceToggle}
+                />
+            </div>
+        </div>
     );
 };

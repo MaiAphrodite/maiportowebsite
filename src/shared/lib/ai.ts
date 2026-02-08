@@ -1,7 +1,7 @@
 import { createOpenAI } from '@ai-sdk/openai';
 
 // Interface for our identifying our supported providers
-type AIProvider = 'grok' | 'openai' | 'deepseek' | 'custom';
+type AIProvider = 'grok' | 'openai' | 'deepseek' | 'cloudflare' | 'custom';
 
 interface AIConfig {
     provider: AIProvider;
@@ -50,6 +50,14 @@ export function getChatModel() {
                 baseURL: defaultConfig.baseURL,
             });
             return custom.chat(defaultConfig.modelName);
+
+        case 'cloudflare':
+            // Cloudflare Workers AI (OpenAI compatible)
+            const cloudflare = createOpenAI({
+                apiKey: process.env.CLOUDFLARE_API_TOKEN || defaultConfig.apiKey,
+                baseURL: `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/ai/v1`,
+            });
+            return cloudflare.chat(defaultConfig.modelName || '@cf/meta/llama-3.1-8b-instruct');
 
         case 'grok':
         default:
