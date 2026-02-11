@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { TextStreamChatTransport } from 'ai';
 import { maiCharacter } from '@/features/chat/characters';
@@ -25,6 +25,9 @@ interface ChatContextType {
     setDisplayedMessageId: (id: string | null) => void;
     displayedText: string;
     setDisplayedText: (text: string) => void;
+    // Voice
+    isVoiceEnabled: boolean;
+    setIsVoiceEnabled: (value: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -46,13 +49,23 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     const [showAiReplies, setShowAiReplies] = useState(false);
     const [displayedMessageId, setDisplayedMessageId] = useState<string | null>(null);
     const [displayedText, setDisplayedText] = useState('');
+    const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
     // Use useState for stable mutable object to avoid "reading ref during render" lint
     const [messageTimestamps] = useState(() => new Map<string, Date>());
 
+    // Use ref to always get current token value (avoids stale closure in transport callback)
+    const tokenRef = useRef(token);
+    useEffect(() => {
+        tokenRef.current = token;
+    }, [token]);
+
+    // Transport is stable (no token dependency) - uses tokenRef.current instead
+    // The ref is accessed inside prepareSendMessagesRequest callback, not during render
+    // eslint-disable-next-line react-hooks/refs
     const transport = React.useMemo(() => new TextStreamChatTransport({
         api: '/api/chat',
         prepareSendMessagesRequest: async ({ messages: msgs, ...rest }) => {
-            const currentToken = token;
+            const currentToken = tokenRef.current;
             console.log("Sending message with token:", currentToken ? currentToken.slice(0, 10) + "..." : "null");
             const transformedMessages = msgs.map((msg: ChatMessage) => {
                 let content = msg.content;
@@ -63,7 +76,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
             });
             return { ...rest, body: { messages: transformedMessages, token: currentToken } };
         }
-    }), [token]);
+    }), []);
 
     const { messages, sendMessage, status } = useChat({
         id: 'mai-stream-chat',
@@ -107,6 +120,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         setDisplayedMessageId,
         displayedText,
         setDisplayedText,
+        isVoiceEnabled,
+        setIsVoiceEnabled,
     };
 
     return (
