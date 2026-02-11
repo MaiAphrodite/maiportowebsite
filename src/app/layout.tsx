@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { M_PLUS_Rounded_1c, Fredoka } from "next/font/google";
 import "./globals.css";
+import WavesBackground from "@/components/ui/WavesBackground";
 
 const mPlus = M_PLUS_Rounded_1c({
   weight: ["100", "300", "400", "500", "700", "800", "900"],
@@ -30,6 +31,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
       </head>
       <body className={`${mPlus.variable} ${fredoka.variable} font-sans antialiased`}>
+        <WavesBackground />
         {children}
       </body>
     </html>
