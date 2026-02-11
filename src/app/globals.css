@@ -200,9 +200,8 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: var(--desktop-bg);
-  /* Fallback uses var, browser handles it */
-  transition: background 0.5s ease;
+  /* background: var(--desktop-bg); removed for waves */
+  /* transition: background 0.5s ease; */
   border-radius: 24px;
 }
 

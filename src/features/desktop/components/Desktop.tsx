@@ -79,7 +79,6 @@ export const Desktop = () => {
         <div
             className="desktop-container relative w-full h-screen overflow-hidden bg-cover bg-center"
             style={{
-                backgroundImage: 'var(--desktop-bg)',
                 height: '100vh',
                 width: '100vw',
                 position: 'relative',
