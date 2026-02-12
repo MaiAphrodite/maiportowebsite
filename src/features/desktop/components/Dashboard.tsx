@@ -99,13 +99,10 @@ export const Dashboard = () => {
                 </div>
 
                 {/* Proof sheet accent bars */}
-                <div className="flex gap-3 mt-2 mb-1">
+                <div className="flex gap-3 mt-2 mb-4">
                     <div className="gfx-accent-bar pink flex-1" />
                     <span className="gfx-reg-mark" />
                     <span className="gfx-reg-mark" />
-                </div>
-                <div className="flex gap-3 mb-4">
-                    <div className="gfx-accent-bar teal" style={{ width: '40%' }} />
                 </div>
 
                 {/* ═══ GFX HERO SECTION ═══ */}
@@ -493,11 +490,6 @@ export const Dashboard = () => {
 
                 {/* ═══ BOTTOM COLOPHON ═══ */}
                 <div className="mt-12 pt-6 border-t border-mai-border/10">
-                    {/* Proof sheet accent bar at footer */}
-                    <div className="flex gap-3 mb-4">
-                        <div className="gfx-accent-bar teal" style={{ width: '60%' }} />
-                        <span className="gfx-reg-mark" />
-                    </div>
 
                     {/* Top row: data strip */}
                     <div className="gfx-data-row">

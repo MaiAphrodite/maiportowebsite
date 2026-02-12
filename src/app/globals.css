@@ -628,10 +628,6 @@ body {
   background: var(--mai-primary);
 }
 
-.gfx-accent-bar.teal {
-  background: var(--mai-teal, #94e2d5);
-}
-
 /* Registration mark — small hollow square */
 .gfx-reg-mark {
   display: inline-block;
