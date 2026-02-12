@@ -119,8 +119,8 @@ const WavesBackground = () => {
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
 
-            const mouseX = mouseRef.current.x;
-            const mouseY = mouseRef.current.y;
+            const _mouseX = mouseRef.current.x;
+            const _mouseY = mouseRef.current.y;
 
             // === Drifting epicenters (3 broad sources) ===
             const cx1 = width * 0.3 + Math.sin(time * 0.1) * 250;

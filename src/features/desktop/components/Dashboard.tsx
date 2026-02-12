@@ -86,7 +86,7 @@ export const Dashboard = () => {
                 <div className="gfx-top-bar">
                     <span className="gfx-meta" style={{ opacity: 1 }}>&lt;/PORTFOLIO&gt;</span>
                     <span className="gfx-meta" style={{ opacity: 1 }}>MAI APHRODITE</span>
-                    <span className="gfx-meta" style={{ opacity: 1 }}>© 2025 // PERSONAL</span>
+                    <span className="gfx-meta" style={{ opacity: 1 }}>{'© 2025 // PERSONAL'}</span>
                 </div>
 
                 {/* ═══ GFX HERO SECTION ═══ */}
@@ -132,7 +132,7 @@ export const Dashboard = () => {
                         {/* Name + Bio */}
                         <div className="flex-1 min-w-0">
                             {/* Slug line */}
-                            <div className="gfx-slash-label mb-1">// v2.0 — portfolio</div>
+                            <div className="gfx-slash-label mb-1">{'// v2.0 — portfolio'}</div>
 
                             <div className="flex items-baseline gap-3 flex-wrap">
                                 <h1
@@ -246,7 +246,7 @@ export const Dashboard = () => {
                                 <span className="gfx-cross">＋</span>
                                 <span className="gfx-meta">{projects.length} repos</span>
                                 <span className="gfx-sq" />
-                                <span className="gfx-slash-label">// featured</span>
+                                <span className="gfx-slash-label">{'// featured'}</span>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -270,7 +270,7 @@ export const Dashboard = () => {
                                             <div className="gfx-corner-br" style={{ width: '12px', height: '12px', opacity: 0.3 }} />
 
                                             {/* Card index */}
-                                            <span className="absolute top-3 right-4 gfx-slash-label">// 0{idx + 1}</span>
+                                            <span className="absolute top-3 right-4 gfx-slash-label">{'// 0'}{idx + 1}</span>
 
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className="p-3 bg-mai-primary/20 text-mai-primary rounded-2xl">
@@ -318,7 +318,7 @@ export const Dashboard = () => {
                                 <span className="text-mai-text font-light text-lg tracking-wide">Writes</span>
                                 <div className="flex-1 h-px bg-mai-border/20" />
                                 <span className="gfx-cross">＋</span>
-                                <span className="gfx-slash-label">// medium articles</span>
+                                <span className="gfx-slash-label">{'// medium articles'}</span>
                                 <a href="https://medium.com/@maiaphrodite" target="_blank" className="text-mai-primary hover:text-mai-primary/80 text-xs transition-colors">View All</a>
                             </div>
 
@@ -419,7 +419,7 @@ export const Dashboard = () => {
                                 <span className="gfx-section-number">04</span>
                                 <span className="text-mai-text font-light text-sm tracking-wide">Stack</span>
                                 <span className="gfx-cross ml-auto">＋</span>
-                                <span className="gfx-slash-label">// tech specs</span>
+                                <span className="gfx-slash-label">{'// tech specs'}</span>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {loading ? (
@@ -463,7 +463,7 @@ export const Dashboard = () => {
                     <span>＋</span>
                     <span>Next.js</span>
                     <span className="gfx-sq" />
-                    <span>Catppuccin Mocha // Latte</span>
+                    <span>{'Catppuccin Mocha // Latte'}</span>
                     <span className="gfx-sq" />
                     <span>Fredoka × M PLUS</span>
                 </div>
