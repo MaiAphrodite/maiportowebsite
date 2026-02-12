@@ -17,7 +17,7 @@ export const SystemTray = () => {
         <div className="flex items-center gap-1.5 md:gap-3 text-mai-text bg-mai-surface-dim px-2 md:px-4 py-1.5 md:py-2 rounded-full border border-mai-border/30 shadow-sm">
             {/* Theme Toggle */}
             <button
-                onClick={toggleTheme}
+                onClick={(e) => toggleTheme({ x: e.clientX, y: e.clientY })}
                 className="p-1 md:p-1.5 hover:bg-mai-surface rounded-full transition-colors text-mai-primary"
                 title="Toggle Theme"
             >

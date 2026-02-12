@@ -117,7 +117,7 @@ export const Taskbar = () => {
 
                     {/* Theme Toggle */}
                     <button
-                        onClick={toggleTheme}
+                        onClick={(e) => toggleTheme({ x: e.clientX, y: e.clientY })}
                         className="p-2 rounded-full hover:bg-mai-text/10 text-mai-subtext hover:text-mai-text transition-colors"
                         title="Toggle Theme"
                     >
