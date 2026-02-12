@@ -1,22 +1,37 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Volume2 } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Volume2, Music } from 'lucide-react';
 
 export const MusicWidget = () => {
-    const [isPlaying, setIsPlaying] = useState(true);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+    React.useEffect(() => {
+        if (audioRef.current) {
+            if (isPlaying) {
+                audioRef.current.play().catch(e => console.error("Audio play failed:", e));
+            } else {
+                audioRef.current.pause();
+            }
+        }
+    }, [isPlaying]);
 
     return (
         <div className="flex items-center gap-4 p-4 select-none">
+            <audio ref={audioRef} src="/music/bus-stop.ogg" loop />
+
             {/* Album Art */}
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white text-2xl shadow-lg">
-                🎵
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-mai-primary to-mai-accent flex items-center justify-center text-white text-2xl shadow-lg">
+                <div className={`${isPlaying ? 'animate-pulse' : ''}`}>
+                    <Music size={24} />
+                </div>
             </div>
 
             {/* Track Info */}
             <div className="flex-1 min-w-0">
-                <p className="text-mai-text font-semibold text-sm truncate">Lofi Coding Session</p>
-                <p className="text-mai-subtext text-xs truncate">Cozy Beats Radio</p>
+                <p className="text-mai-text font-semibold text-sm truncate">Bus Stop</p>
+                <p className="text-mai-subtext text-xs truncate">HoliznaCC0</p>
             </div>
 
             {/* Controls */}
