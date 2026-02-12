@@ -79,7 +79,7 @@ export const Dashboard = () => {
     const totalStars = projects.reduce((sum, r) => sum + r.stargazers_count, 0);
 
     return (
-        <div className="w-full h-full overflow-y-auto overflow-x-hidden pt-16 px-6 pb-20 scrollbar-hide">
+        <div className="w-full h-full overflow-y-auto overflow-x-hidden pt-16 px-6 pb-20 scrollbar-hide relative z-0">
             <div className="max-w-7xl mx-auto">
 
                 {/* ═══ TOP METADATA BAR ═══ */}
