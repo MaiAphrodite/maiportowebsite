@@ -102,18 +102,18 @@ export const Window = React.memo(({ windowState, children }: WindowProps) => {
                     transition={{ duration: 0.2, ease: "easeOut" }}
                     className={`
                         w-full h-full flex flex-col 
-                        ${isWidget ? 'rounded-3xl border border-white/10' : 'rounded-lg border border-[#cba6f7]/30'}
+                        ${isWidget ? 'rounded-3xl border border-mai-border/10' : 'rounded-lg border border-mai-border/30'}
                         overflow-hidden
                     `}
                     style={isWidget ? {
-                        background: 'rgba(30, 30, 46, 0.6)',
+                        background: 'var(--window-widget-bg)',
                         backdropFilter: 'blur(24px)',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+                        boxShadow: '0 8px 32px var(--glass-shadow)'
                     } : {
-                        // Explorer-like feel: Solid dark background with slight transparency, glass border
-                        background: 'rgba(30, 30, 46, 0.95)',
+                        // Explorer-like feel: Solid background with slight transparency, glass border
+                        background: 'var(--window-bg)',
                         backdropFilter: 'blur(10px)',
-                        boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)'
+                        boxShadow: '0 20px 50px var(--glass-shadow)'
                     }}
                 >
                     {!isWidget && (

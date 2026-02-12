@@ -17,73 +17,112 @@
 @theme {
   --color-mai-primary: var(--mai-primary);
   --color-mai-secondary: var(--mai-secondary);
+  --color-mai-accent: var(--mai-accent);
+  --color-mai-success: var(--mai-success);
+  --color-mai-warning: var(--mai-warning);
+  --color-mai-error: var(--mai-error);
   --color-mai-surface: var(--mai-surface);
   --color-mai-surface-dim: var(--mai-surface-dim);
   --color-mai-text: var(--mai-text);
   --color-mai-subtext: var(--mai-subtext);
   --color-mai-border: var(--mai-border);
+  --color-mai-overlay: var(--mai-overlay);
   --color-rice-bg: var(--rice-bg);
   --color-rice-panel: var(--rice-panel);
 }
 
 :root {
-  /* LIGHT THEME (Pastel/Day) */
-  --mai-primary: #FF69B4;
-  /* Hot Pink */
-  --mai-secondary: #00FFFF;
-  /* Cyan */
+  /* ═══════════════════════════════════════ */
+  /* LIGHT THEME — Catppuccin Latte         */
+  /* ═══════════════════════════════════════ */
 
-  --mai-surface: #FFF0F5;
-  /* Lavender Blush - Solid */
-  --mai-surface-dim: #FFE4E1;
-  /* Misty Rose */
+  /* Accent Colors */
+  --mai-primary: #ea76cb;
+  /* Pink */
+  --mai-secondary: #1e66f5;
+  /* Blue */
+  --mai-accent: #8839ef;
+  /* Mauve */
+  --mai-success: #40a02b;
+  /* Green */
+  --mai-warning: #df8e1d;
+  /* Yellow */
+  --mai-error: #d20f39;
+  /* Red */
 
-  --mai-text: #2D2D3A;
-  /* Dark Grey for contrast */
-  --mai-subtext: #595959;
+  /* Surfaces — Latte Base/Mantle/Crust */
+  --mai-surface: #ccd0da;
+  /* Surface0 */
+  --mai-surface-dim: #dce0e8;
+  /* Crust */
+  --mai-overlay: #9ca0b0;
+  /* Overlay0 */
 
-  --mai-border: #2D2D3A;
-  /* High Contrast Dark Border */
+  /* Typography */
+  --mai-text: #4c4f69;
+  /* Text */
+  --mai-subtext: #6c6f85;
+  /* Subtext0 */
 
-  /* Rice Specifics */
-  --rice-bg: #FDFDD0;
-  /* Pastel Yellow Background */
-  --rice-panel: #FFFFFF;
-  --rice-shadow: #2D2D3A;
+  /* Borders */
+  --mai-border: #ea76cb;
+  /* Pink border for consistency */
+
+  /* Rice Specifics — Latte */
+  --rice-bg: #eff1f5;
+  /* Base */
+  --rice-panel: #e6e9ef;
+  /* Mantle */
+  --rice-shadow: #4c4f69;
 
   /* Desktop Background */
   --desktop-bg: var(--rice-bg);
 
-  /* Boot Screen Variables (Light) */
-  --boot-title: #2D2D3A;
-  --boot-card-bg: #FFFFFF;
-  --boot-dots: #FF69B4;
-  --boot-hearts: #FF69B4;
-  --boot-progress-bg: #E0E0E0;
-  --boot-progress-fill: #FF69B4;
-  --boot-footer: #9CA3AF;
+  /* Glass / Panel / Card utilities (light) */
+  --glass-bg: rgba(230, 233, 239, 0.75);
+  /* Mantle glass */
+  --glass-border: rgba(234, 118, 203, 0.25);
+  /* Pink 25% */
+  --glass-hover-border: rgba(234, 118, 203, 0.5);
+  --glass-shadow: rgba(76, 79, 105, 0.1);
+  --waybar-bg: rgba(204, 208, 218, 0.8);
+  /* Surface0 glass */
+  --waybar-hover-bg: rgba(188, 192, 204, 0.9);
+  /* Surface1 */
+  --window-bg: rgba(230, 233, 239, 0.95);
+  /* Mantle solid */
+  --window-widget-bg: rgba(239, 241, 245, 0.6);
+  /* Base glass */
+  --card-bg: rgba(76, 79, 105, 0.05);
+  /* Text 5% */
+  --card-border: rgba(76, 79, 105, 0.1);
+  /* Text 10% */
+  --card-hover-bg: rgba(76, 79, 105, 0.1);
+  /* Text 10% */
+  --card-hover-border: rgba(234, 118, 203, 0.3);
+
+  /* Boot Screen Variables (Latte) */
+  --boot-title: #4c4f69;
+  --boot-card-bg: #e6e9ef;
+  --boot-dots: #ea76cb;
+  --boot-hearts: #ea76cb;
+  --boot-progress-bg: #ccd0da;
+  --boot-progress-fill: #ea76cb;
+  --boot-footer: #6c6f85;
 }
 
 [data-theme='dark'] {
-  /* DARK THEME (Rice/Night) */
-  --mai-primary: #FF69B4;
-  --mai-secondary: #00FFFF;
+  /* ═══════════════════════════════════════ */
+  /* DARK THEME — Catppuccin Mocha          */
+  /* ═══════════════════════════════════════ */
 
-  /* Kawaii Hyprland Rice - Catppuccin Mocha */
-  --rice-bg: #1e1e2e;
-  /* Base */
-  --rice-panel: #1e1e2e;
-  /* Base (for glass) */
-  --rice-overlay: #313244;
-  /* Surface0 */
-
-  /* Catppuccin Mocha Corrected */
+  /* Accent Colors */
   --mai-primary: #f5c2e7;
-  /* Rosewater (Soft Pink) - Main Accent */
+  /* Pink */
   --mai-secondary: #89b4fa;
-  /* Blue - Tech Accent */
+  /* Blue */
   --mai-accent: #cba6f7;
-  /* Mauve - Secondary Accent */
+  /* Mauve */
   --mai-success: #a6e3a1;
   /* Green */
   --mai-warning: #f9e2af;
@@ -91,24 +130,58 @@
   --mai-error: #f38ba8;
   /* Red */
 
-  --mai-text: #cdd6f4;
-  /* Text */
-  --mai-subtext: #a6adc8;
-  /* Subtext0 */
-  --mai-border: #f5c2e7;
-  /* Rosewater Border */
-
+  /* Surfaces — Mocha Base/Mantle/Crust */
   --mai-surface: #313244;
   /* Surface0 */
   --mai-surface-dim: #181825;
   /* Crust */
+  --mai-overlay: #6c7086;
+  /* Overlay0 */
+
+  /* Typography */
+  --mai-text: #cdd6f4;
+  /* Text */
+  --mai-subtext: #a6adc8;
+  /* Subtext0 */
+
+  /* Borders */
+  --mai-border: #f5c2e7;
+  /* Pink border */
+
+  /* Rice Specifics — Mocha */
+  --rice-bg: #1e1e2e;
+  /* Base */
+  --rice-panel: #1e1e2e;
+  /* Base (for glass) */
+  --rice-shadow: #11111b;
+
+  /* Desktop Background */
+  --desktop-bg: var(--rice-bg);
+
+  /* Glass / Panel / Card utilities (dark) */
+  --glass-bg: rgba(30, 30, 46, 0.75);
+  /* Base glass */
+  --glass-border: rgba(245, 194, 231, 0.3);
+  /* Pink 30% */
+  --glass-hover-border: rgba(245, 194, 231, 0.6);
+  --glass-shadow: rgba(0, 0, 0, 0.3);
+  --waybar-bg: rgba(49, 50, 68, 0.8);
+  /* Surface0 glass */
+  --waybar-hover-bg: rgba(69, 71, 90, 0.9);
+  /* Surface1 */
+  --window-bg: rgba(30, 30, 46, 0.95);
+  /* Base solid */
+  --window-widget-bg: rgba(30, 30, 46, 0.6);
+  /* Base glass */
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-hover-bg: rgba(255, 255, 255, 0.1);
+  --card-hover-border: rgba(245, 194, 231, 0.3);
 
   /* Boot Splash Map */
-  --desktop-bg: var(--rice-bg);
   --boot-title: var(--mai-primary);
   --boot-subtext: var(--mai-secondary);
   --boot-card-bg: rgba(30, 30, 46, 0.8);
-  /* Glassy Base */
   --boot-progress-bg: var(--mai-surface-dim);
   --boot-progress-fill: var(--mai-primary);
   --boot-footer: var(--mai-subtext);
@@ -147,46 +220,288 @@ body {
 
 /* Glassmorphism: The "Rice" Look */
 .glass-panel {
-  background: rgba(30, 30, 46, 0.75) !important;
-  /* Mocha Base with transparency */
+  background: var(--glass-bg) !important;
   backdrop-filter: blur(12px) !important;
-  /* Heavy Blur */
-  border: 2px solid rgba(245, 194, 231, 0.3) !important;
-  /* Rosewater 30% */
+  border: 2px solid var(--glass-border) !important;
   border-radius: 20px !important;
-  /* Smooth 20px */
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
-  /* Deep soft shadow */
+  box-shadow: 0 8px 32px 0 var(--glass-shadow) !important;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .glass-panel:hover {
-  border-color: rgba(245, 194, 231, 0.6) !important;
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4) !important;
+  border-color: var(--glass-hover-border) !important;
+  box-shadow: 0 12px 40px 0 var(--glass-shadow) !important;
 }
 
 /* Waybar Module Style */
 .waybar-module {
-  background: rgba(49, 50, 68, 0.8);
-  /* Surface0 Glass */
+  background: var(--waybar-bg);
   backdrop-filter: blur(8px);
   border: 2px solid transparent;
   border-radius: 99px;
-  /* Pill */
   padding: 0 16px;
   height: 40px;
   display: flex;
   align-items: center;
   gap: 12px;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px var(--glass-shadow);
 }
 
 .waybar-module:hover {
-  background: rgba(69, 71, 90, 0.9);
-  /* Surface1 */
+  background: var(--waybar-hover-bg);
   border-color: var(--mai-primary);
   transform: translateY(-2px);
+}
+
+/* ═══════════════════════════════════════════════════════
+   GFX Typography Utilities
+   ═══════════════════════════════════════════════════════ */
+
+.gfx-watermark {
+  position: absolute;
+  font-family: var(--font-fredoka), sans-serif;
+  font-weight: 700;
+  font-size: clamp(120px, 20vw, 280px);
+  line-height: 1;
+  color: var(--mai-text);
+  opacity: 0.03;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  z-index: 0;
+}
+
+.gfx-separator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 24px 0;
+}
+
+.gfx-separator::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mai-primary);
+  flex-shrink: 0;
+}
+
+.gfx-separator::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--mai-primary), transparent);
+}
+
+.gfx-stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 16px;
+  border: 1px solid var(--mai-border);
+  border-radius: 12px;
+  background: var(--card-bg);
+  backdrop-filter: blur(8px);
+  min-width: 80px;
+  transition: all 0.2s ease;
+}
+
+.gfx-stat-box:hover {
+  border-color: var(--mai-primary);
+  transform: translateY(-2px);
+}
+
+.gfx-stat-box .stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mai-subtext);
+}
+
+.gfx-stat-box .stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--mai-text);
+  font-family: var(--font-fredoka), sans-serif;
+}
+
+.gfx-section-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mai-primary);
+  padding: 2px 8px;
+  border: 1px solid var(--mai-primary);
+  border-radius: 6px;
+  line-height: 1;
+}
+
+/* Decorative corner brackets */
+.gfx-corner-tl,
+.gfx-corner-br {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.gfx-corner-tl {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--mai-primary);
+  border-left: 2px solid var(--mai-primary);
+}
+
+.gfx-corner-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--mai-primary);
+  border-right: 2px solid var(--mai-primary);
+}
+
+/* Cross markers */
+.gfx-cross {
+  color: var(--mai-primary);
+  opacity: 0.4;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+
+/* Floating metadata labels */
+.gfx-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mai-subtext);
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* Rotated side label */
+.gfx-side-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--mai-subtext);
+  opacity: 0.3;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Decorative thin line */
+.gfx-line-v {
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--mai-primary), transparent);
+  opacity: 0.3;
+}
+
+.gfx-line-h {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--mai-primary), transparent);
+  opacity: 0.3;
+}
+
+/* Barcode-like decorative element */
+.gfx-barcode {
+  display: flex;
+  gap: 1px;
+  height: 28px;
+  align-items: flex-end;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.3;
+}
+
+.gfx-barcode span {
+  background: var(--mai-text);
+  display: block;
+}
+
+/* Top metadata bar */
+.gfx-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--mai-border);
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+/* Square bullet separator */
+.gfx-sq {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--mai-text);
+  opacity: 0.3;
+  flex-shrink: 0;
+}
+
+/* Data row — inline metadata */
+.gfx-data-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mai-subtext);
+  opacity: 0.4;
+  user-select: none;
+}
+
+/* Big accent number */
+.gfx-big-number {
+  font-family: var(--font-fredoka), sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--mai-text);
+  opacity: 0.06;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Boxed number */
+.gfx-boxed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--mai-border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--mai-text);
+  opacity: 0.5;
+}
+
+/* Double-slash label */
+.gfx-slash-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--mai-subtext);
+  opacity: 0.35;
+  user-select: none;
 }
 
 .window-shadow {

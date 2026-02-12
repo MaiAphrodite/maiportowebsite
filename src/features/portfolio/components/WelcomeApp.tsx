@@ -38,7 +38,7 @@ export const WelcomeApp = ({ profile }: WelcomeAppProps) => {
         <div className="flex flex-col items-center justify-center h-full p-8 text-center select-none">
             {/* Avatar */}
             <div className="relative mb-5">
-                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-white/20 shadow-lg ring-2 ring-pink-500/30">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-mai-border/20 shadow-lg ring-2 ring-mai-primary/30">
                     <Image
                         src={profile?.avatar_url || "/assets/maiveclogo.png"}
                         alt={profile?.name || "Mai"}
@@ -47,7 +47,7 @@ export const WelcomeApp = ({ profile }: WelcomeAppProps) => {
                     />
                 </div>
                 <div
-                    className="absolute -bottom-1 -right-1 bg-green-400 w-5 h-5 rounded-full border-[3px] border-[#1e1e2e]"
+                    className="absolute -bottom-1 -right-1 bg-mai-success w-5 h-5 rounded-full border-[3px] border-rice-bg"
                     title="Available for work"
                 />
             </div>
@@ -58,7 +58,7 @@ export const WelcomeApp = ({ profile }: WelcomeAppProps) => {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-sm text-white/60 mb-6 max-w-xs font-medium line-clamp-2">
+            <p className="text-sm text-mai-subtext mb-6 max-w-xs font-medium line-clamp-2">
                 {profile?.bio || "Full Stack Developer • AI Enthusiast • Building cozy digital experiences"}
             </p>
 
@@ -75,7 +75,7 @@ export const WelcomeApp = ({ profile }: WelcomeAppProps) => {
 
                 <button
                     onClick={handleOpenContact}
-                    className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all hover:scale-[1.02] border border-white/10"
+                    className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-mai-text/10 hover:bg-mai-text/20 text-mai-text font-semibold rounded-xl transition-all hover:scale-[1.02] border border-mai-border/10"
                 >
                     <Mail size={18} />
                     Contact
@@ -88,7 +88,7 @@ export const WelcomeApp = ({ profile }: WelcomeAppProps) => {
                     href={profile?.html_url || "https://github.com/MaiAphrodite"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2.5 text-white/40 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                    className="p-2.5 text-mai-subtext hover:text-mai-text hover:bg-mai-text/10 rounded-full transition-all"
                 >
                     <Github size={18} />
                 </a>
@@ -97,7 +97,7 @@ export const WelcomeApp = ({ profile }: WelcomeAppProps) => {
                         href={profile.blog.startsWith('http') ? profile.blog : `https://${profile.blog}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2.5 text-white/40 hover:text-blue-400 hover:bg-blue-400/10 rounded-full transition-all"
+                        className="p-2.5 text-mai-subtext hover:text-mai-secondary hover:bg-mai-secondary/10 rounded-full transition-all"
                     >
                         <Globe size={18} />
                     </a>

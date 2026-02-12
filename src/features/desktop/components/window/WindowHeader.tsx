@@ -22,7 +22,8 @@ export const WindowHeader = ({
 }: WindowHeaderProps) => {
     return (
         <div
-            className="window-header h-10 flex items-center justify-between px-3 cursor-move select-none shrink-0 text-mai-text font-mono bg-white/5 border-b border-white/5"
+            className="window-header h-10 flex items-center justify-between px-3 cursor-move select-none shrink-0 text-mai-text font-mono border-b border-mai-border/10"
+            style={{ background: 'var(--card-bg)' }}
             onDoubleClick={onDoubleClick}
         >
             <span className="font-bold tracking-tight text-sm uppercase pl-1">{title}</span>

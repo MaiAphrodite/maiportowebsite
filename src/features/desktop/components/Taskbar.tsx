@@ -94,7 +94,7 @@ export const Taskbar = () => {
                                     transition-all duration-200
                                     ${isActive
                                         ? 'bg-mai-primary/20 text-mai-primary'
-                                        : 'text-mai-subtext hover:text-mai-text hover:bg-white/5'
+                                        : 'text-mai-subtext hover:text-mai-text hover:bg-mai-text/5'
                                     }
                                 `}
                             >
@@ -118,7 +118,7 @@ export const Taskbar = () => {
                     {/* Theme Toggle */}
                     <button
                         onClick={toggleTheme}
-                        className="p-2 rounded-full hover:bg-white/10 text-mai-subtext hover:text-mai-text transition-colors"
+                        className="p-2 rounded-full hover:bg-mai-text/10 text-mai-subtext hover:text-mai-text transition-colors"
                         title="Toggle Theme"
                     >
                         {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
