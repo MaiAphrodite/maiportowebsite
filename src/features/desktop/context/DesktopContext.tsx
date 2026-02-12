@@ -71,53 +71,22 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
     }, [windows, activeWindowId, maxZIndex, theme]);
 
     const toggleTheme = React.useCallback((coords?: { x: number; y: number }) => {
+        void coords; // coords reserved for future use
         const currentTheme = stateRef.current.theme;
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
 
-        // Circular reveal using View Transitions API
         const applyTheme = () => {
             setTheme(newTheme);
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('mai-theme', newTheme);
         };
 
-        // Check if View Transitions API is supported
-        if (!document.startViewTransition) {
+        // CRT transition via View Transitions API — CSS handles the animation
+        if (document.startViewTransition) {
+            document.startViewTransition(applyTheme);
+        } else {
             applyTheme();
-            return;
         }
-
-        // Set the origin point for the circular reveal
-        const x = coords?.x ?? window.innerWidth / 2;
-        const y = coords?.y ?? window.innerHeight / 2;
-        document.documentElement.style.setProperty('--theme-x', `${x}px`);
-        document.documentElement.style.setProperty('--theme-y', `${y}px`);
-
-        const transition = document.startViewTransition(applyTheme);
-
-        // Prevent default crossfade and use our custom circle animation
-        transition.ready.then(() => {
-            const maxRadius = Math.hypot(
-                Math.max(x, window.innerWidth - x),
-                Math.max(y, window.innerHeight - y)
-            );
-
-            document.documentElement.animate(
-                {
-                    clipPath: [
-                        `circle(0px at ${x}px ${y}px)`,
-                        `circle(${maxRadius}px at ${x}px ${y}px)`,
-                    ],
-                },
-                {
-                    duration: 500,
-                    easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-                    pseudoElement: '::view-transition-new(root)',
-                }
-            );
-        }).catch(() => {
-            // Transition was skipped — theme is already applied
-        });
     }, []);
 
     const focusWindow = React.useCallback((id: string) => {
