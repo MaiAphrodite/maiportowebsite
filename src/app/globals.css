@@ -601,6 +601,57 @@ body {
   user-select: none;
 }
 
+/* Proof sheet accent bars — thin colored lines */
+.gfx-accent-bar {
+  height: 2px;
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.gfx-accent-bar.pink {
+  background: var(--mai-primary);
+}
+
+.gfx-accent-bar.teal {
+  background: var(--mai-teal, #94e2d5);
+}
+
+/* Registration mark — small hollow square */
+.gfx-reg-mark {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--mai-text);
+  opacity: 0.12;
+  flex-shrink: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Hash/hex code label */
+.gfx-hash {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--mai-subtext);
+  opacity: 0.2;
+  user-select: none;
+}
+
+/* Stripe block — larger decorative fill */
+.gfx-stripe-block {
+  background: repeating-linear-gradient(-45deg,
+      var(--mai-text) 0px,
+      var(--mai-text) 1.5px,
+      transparent 1.5px,
+      transparent 6px);
+  opacity: 0.04;
+  pointer-events: none;
+  user-select: none;
+  border-radius: 2px;
+}
+
 .window-shadow {
   box-shadow: none !important;
 }

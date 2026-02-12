@@ -98,6 +98,16 @@ export const Dashboard = () => {
                     </div>
                 </div>
 
+                {/* Proof sheet accent bars */}
+                <div className="flex gap-3 mt-2 mb-1">
+                    <div className="gfx-accent-bar pink flex-1" />
+                    <span className="gfx-reg-mark" />
+                    <span className="gfx-reg-mark" />
+                </div>
+                <div className="flex gap-3 mb-4">
+                    <div className="gfx-accent-bar teal" style={{ width: '40%' }} />
+                </div>
+
                 {/* ═══ GFX HERO SECTION ═══ */}
                 <div className="relative mb-4">
                     {/* Watermark */}
@@ -255,6 +265,9 @@ export const Dashboard = () => {
 
                         {/* 01 — Projects */}
                         <div className="relative">
+                            {/* Stripe fill decoration */}
+                            <div className="gfx-stripe-block absolute -left-3 top-8 w-20 h-32 hidden lg:block" />
+
                             {/* Big accent number */}
                             <div className="gfx-big-number absolute -right-4 -top-6 hidden md:block">02</div>
 
@@ -333,6 +346,8 @@ export const Dashboard = () => {
 
                         {/* 02 — Writes */}
                         <div className="relative">
+                            {/* Stripe fill on writes section */}
+                            <div className="gfx-stripe-block absolute -right-3 top-10 w-16 h-28 hidden lg:block" />
                             <div className="flex items-center gap-3 mb-5">
                                 <span className="gfx-section-number">02</span>
                                 <span className="text-mai-text font-light text-lg tracking-wide">Writes</span>
@@ -478,6 +493,12 @@ export const Dashboard = () => {
 
                 {/* ═══ BOTTOM COLOPHON ═══ */}
                 <div className="mt-12 pt-6 border-t border-mai-border/10">
+                    {/* Proof sheet accent bar at footer */}
+                    <div className="flex gap-3 mb-4">
+                        <div className="gfx-accent-bar teal" style={{ width: '60%' }} />
+                        <span className="gfx-reg-mark" />
+                    </div>
+
                     {/* Top row: data strip */}
                     <div className="gfx-data-row">
                         <span>© {new Date().getFullYear()}</span>
@@ -490,8 +511,13 @@ export const Dashboard = () => {
                         <span className="gfx-sq" />
                         <span>Fredoka × M PLUS</span>
                     </div>
-                    {/* Bottom row: Japanese + dots */}
+                    {/* Bottom row: Japanese + hash + dots */}
                     <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center gap-2">
+                            <span className="gfx-jp">校正シート</span>
+                            <div className="gfx-accent-bar pink" style={{ width: '60px' }} />
+                            <span className="gfx-hash">3C0063A1.{String(projects.length).padStart(2, '0')}B60C × {new Date().getFullYear() % 100}</span>
+                        </div>
                         <div className="flex items-center gap-2">
                             <span className="gfx-jp">開発</span>
                             <span className="gfx-dot" />
@@ -499,9 +525,18 @@ export const Dashboard = () => {
                             <span className="gfx-dot" />
                             <span className="gfx-jp">ポートフォリオ</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                    </div>
+                    {/* Final proof marks row */}
+                    <div className="flex items-center justify-between mt-4">
+                        <div className="flex items-center gap-3">
                             <Barcode />
                             <span className="gfx-sec-code">SEC_EP</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="gfx-reg-mark" />
+                            <span className="gfx-reg-mark" />
+                            <span className="gfx-dot" />
+                            <span className="gfx-reg-mark" />
                         </div>
                     </div>
                 </div>
