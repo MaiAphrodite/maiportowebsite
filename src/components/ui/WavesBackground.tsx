@@ -122,17 +122,24 @@ const WavesBackground = () => {
             const _mouseX = mouseRef.current.x;
             const _mouseY = mouseRef.current.y;
 
-            // === Drifting epicenters (3 broad sources) ===
-            const cx1 = width * 0.3 + Math.sin(time * 0.1) * 250;
-            const cy1 = height * 0.4 + Math.cos(time * 0.13) * 200;
+            // === 5 spread epicenters with gentle drift (no spiral arms) ===
+            // They stay well-separated so waves never bunch together
+            const cx1 = width * 0.15 + Math.sin(time * 0.07) * 120;
+            const cy1 = height * 0.3 + Math.cos(time * 0.09) * 100;
 
-            const cx2 = width * 0.7 + Math.cos(time * 0.08) * 280;
-            const cy2 = height * 0.6 + Math.sin(time * 0.07) * 220;
+            const cx2 = width * 0.85 + Math.cos(time * 0.06) * 130;
+            const cy2 = height * 0.25 + Math.sin(time * 0.08) * 110;
 
-            const cx3 = width * 0.5 + Math.sin(time * 0.06) * 300;
-            const cy3 = height * 0.25 + Math.cos(time * 0.09) * 260;
+            const cx3 = width * 0.5 + Math.sin(time * 0.05) * 150;
+            const cy3 = height * 0.8 + Math.cos(time * 0.07) * 90;
 
-            // === 1. Compute 2D noise field ===
+            const cx4 = width * 0.25 + Math.cos(time * 0.08) * 100;
+            const cy4 = height * 0.7 + Math.sin(time * 0.06) * 120;
+
+            const cx5 = width * 0.75 + Math.sin(time * 0.09) * 110;
+            const cy5 = height * 0.55 + Math.cos(time * 0.05) * 130;
+
+            // === 1. Compute 2D field — pure radial waves, no angular spiral ===
             let minVal = Infinity, maxVal = -Infinity;
 
             for (let row = 0; row < rows; row++) {
@@ -140,26 +147,22 @@ const WavesBackground = () => {
                     const px = col * cellSize;
                     const py = row * cellSize;
 
-                    // Radial distances + angles (for spirals)
-                    const ddx1 = px - cx1, ddy1 = py - cy1;
-                    const d1 = Math.sqrt(ddx1 * ddx1 + ddy1 * ddy1);
-                    const a1 = Math.atan2(ddy1, ddx1); // angle from center
+                    // Pure radial distances (no angle — prevents convergence)
+                    const d1 = Math.sqrt((px - cx1) ** 2 + (py - cy1) ** 2);
+                    const d2 = Math.sqrt((px - cx2) ** 2 + (py - cy2) ** 2);
+                    const d3 = Math.sqrt((px - cx3) ** 2 + (py - cy3) ** 2);
+                    const d4 = Math.sqrt((px - cx4) ** 2 + (py - cy4) ** 2);
+                    const d5 = Math.sqrt((px - cx5) ** 2 + (py - cy5) ** 2);
 
-                    const ddx2 = px - cx2, ddy2 = py - cy2;
-                    const d2 = Math.sqrt(ddx2 * ddx2 + ddy2 * ddy2);
-                    const a2 = Math.atan2(ddy2, ddx2);
-
-                    const ddx3 = px - cx3, ddy3 = py - cy3;
-                    const d3 = Math.sqrt(ddx3 * ddx3 + ddy3 * ddy3);
-                    const a3 = Math.atan2(ddy3, ddx3);
-
-                    // Spiral waves: sin(distance + angle * arms + time)
-                    // The angle term makes rings twist into spirals
-                    // Different arm counts (1, 2, 1) create varied spiral shapes
-                    const val = Math.sin(d1 * 0.008 + a1 * 1.0 + time * 0.3)
-                        + Math.sin(d2 * 0.010 + a2 * 2.0 - time * 0.2) * 0.7
-                        + Math.cos(d3 * 0.012 + a3 * 1.0 + time * 0.15) * 0.5
-                        + Math.sin(px * 0.005 + py * 0.003 + time * 0.4) * 0.3;
+                    // Sum of radial sine waves with varied frequencies
+                    // Each creates concentric ripples that interfere smoothly
+                    const val = Math.sin(d1 * 0.006 + time * 0.25) * 1.0
+                        + Math.sin(d2 * 0.008 - time * 0.20) * 0.8
+                        + Math.cos(d3 * 0.010 + time * 0.15) * 0.6
+                        + Math.sin(d4 * 0.012 - time * 0.18) * 0.5
+                        + Math.cos(d5 * 0.014 + time * 0.12) * 0.4
+                        // Directional planar wave for additional variety
+                        + Math.sin(px * 0.004 + py * 0.003 + time * 0.3) * 0.3;
 
                     const idx = row * cols + col;
                     field[idx] = val;
