@@ -82,11 +82,20 @@ export const Dashboard = () => {
         <div className="w-full h-full overflow-y-auto overflow-x-hidden pt-16 px-6 pb-20 scrollbar-hide relative z-0">
             <div className="max-w-7xl mx-auto">
 
+                {/* Page corner crosses */}
+                <div className="gfx-page-cross tl" />
+                <div className="gfx-page-cross tr" />
+                <div className="gfx-page-cross bl" />
+                <div className="gfx-page-cross br" />
+
                 {/* ═══ TOP METADATA BAR ═══ */}
                 <div className="gfx-top-bar">
                     <span className="gfx-meta" style={{ opacity: 1 }}>&lt;/PORTFOLIO&gt;</span>
                     <span className="gfx-meta" style={{ opacity: 1 }}>MAI APHRODITE</span>
-                    <span className="gfx-meta" style={{ opacity: 1 }}>{'© 2025 // PERSONAL'}</span>
+                    <div className="flex items-center gap-3">
+                        <span className="gfx-jp">ポートフォリオ</span>
+                        <span className="gfx-meta" style={{ opacity: 1 }}>{'© 2025 // PERSONAL'}</span>
+                    </div>
                 </div>
 
                 {/* ═══ GFX HERO SECTION ═══ */}
@@ -114,6 +123,15 @@ export const Dashboard = () => {
 
                     {/* Big accent number in background */}
                     <div className="gfx-big-number absolute right-0 top-0 hidden md:block">01</div>
+
+                    {/* Diagonal stripe accent */}
+                    <div className="gfx-stripes absolute -right-2 top-12 w-16 h-24 rounded-sm hidden lg:block" />
+
+                    {/* Boxed timestamp */}
+                    <div className="absolute bottom-2 right-4 z-10 hidden md:flex items-center gap-3">
+                        <span className="gfx-sec-code">SEC_01</span>
+                        <span className="gfx-timestamp">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</span>
+                    </div>
 
                     <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6 py-8">
                         {/* Avatar */}
@@ -222,6 +240,7 @@ export const Dashboard = () => {
                         <span className="gfx-sq" />
                         <span>Catppuccin</span>
                         <span>＋</span>
+                        <span className="gfx-jp ml-2">デザイン</span>
                     </div>
                 </div>
 
@@ -242,6 +261,7 @@ export const Dashboard = () => {
                             <div className="flex items-center gap-3 mb-5">
                                 <span className="gfx-section-number">01</span>
                                 <span className="text-mai-text font-light text-lg tracking-wide">Projects</span>
+                                <span className="gfx-sec-code ml-1">RCN.{String(projects.length).padStart(3, '0')}</span>
                                 <div className="flex-1 h-px bg-mai-border/20" />
                                 <span className="gfx-cross">＋</span>
                                 <span className="gfx-meta">{projects.length} repos</span>
@@ -316,6 +336,7 @@ export const Dashboard = () => {
                             <div className="flex items-center gap-3 mb-5">
                                 <span className="gfx-section-number">02</span>
                                 <span className="text-mai-text font-light text-lg tracking-wide">Writes</span>
+                                <span className="gfx-jp ml-1">記事</span>
                                 <div className="flex-1 h-px bg-mai-border/20" />
                                 <span className="gfx-cross">＋</span>
                                 <span className="gfx-slash-label">{'// medium articles'}</span>
@@ -456,16 +477,33 @@ export const Dashboard = () => {
                 </div>
 
                 {/* ═══ BOTTOM COLOPHON ═══ */}
-                <div className="gfx-data-row mt-12 pt-4 border-t border-mai-border/10">
-                    <span>© {new Date().getFullYear()}</span>
-                    <span className="gfx-sq" />
-                    <span>Mai Aphrodite</span>
-                    <span>＋</span>
-                    <span>Next.js</span>
-                    <span className="gfx-sq" />
-                    <span>{'Catppuccin Mocha // Latte'}</span>
-                    <span className="gfx-sq" />
-                    <span>Fredoka × M PLUS</span>
+                <div className="mt-12 pt-6 border-t border-mai-border/10">
+                    {/* Top row: data strip */}
+                    <div className="gfx-data-row">
+                        <span>© {new Date().getFullYear()}</span>
+                        <span className="gfx-sq" />
+                        <span>Mai Aphrodite</span>
+                        <span>＋</span>
+                        <span>Next.js</span>
+                        <span className="gfx-sq" />
+                        <span>{'Catppuccin Mocha // Latte'}</span>
+                        <span className="gfx-sq" />
+                        <span>Fredoka × M PLUS</span>
+                    </div>
+                    {/* Bottom row: Japanese + dots */}
+                    <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center gap-2">
+                            <span className="gfx-jp">開発</span>
+                            <span className="gfx-dot" />
+                            <span className="gfx-jp">デザイン</span>
+                            <span className="gfx-dot" />
+                            <span className="gfx-jp">ポートフォリオ</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Barcode />
+                            <span className="gfx-sec-code">SEC_EP</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

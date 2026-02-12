@@ -504,6 +504,103 @@ body {
   user-select: none;
 }
 
+/* Page corner crosses — fixed at corners of a relative container */
+.gfx-page-cross {
+  position: absolute;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--mai-text);
+  opacity: 0.12;
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+
+.gfx-page-cross::before {
+  content: '＋';
+}
+
+.gfx-page-cross.tl {
+  top: 8px;
+  left: 8px;
+}
+
+.gfx-page-cross.tr {
+  top: 8px;
+  right: 8px;
+}
+
+.gfx-page-cross.bl {
+  bottom: 8px;
+  left: 8px;
+}
+
+.gfx-page-cross.br {
+  bottom: 8px;
+  right: 8px;
+}
+
+/* Diagonal stripe pattern */
+.gfx-stripes {
+  background: repeating-linear-gradient(-45deg,
+      var(--mai-text) 0px,
+      var(--mai-text) 2px,
+      transparent 2px,
+      transparent 8px);
+  opacity: 0.06;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Boxed timestamp / build info */
+.gfx-timestamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--mai-border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--mai-text);
+  opacity: 0.4;
+  user-select: none;
+}
+
+/* Page marker dots — small filled circles */
+.gfx-dot {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--mai-text);
+  opacity: 0.2;
+  flex-shrink: 0;
+}
+
+/* Japanese decorative text */
+.gfx-jp {
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  color: var(--mai-subtext);
+  opacity: 0.25;
+  user-select: none;
+}
+
+/* Section code label (brutalist) */
+.gfx-sec-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mai-text);
+  opacity: 0.15;
+  user-select: none;
+}
+
 .window-shadow {
   box-shadow: none !important;
 }
