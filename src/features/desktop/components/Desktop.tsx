@@ -34,6 +34,16 @@ const BrowserApp = dynamic(() => import('@/features/browser/components/BrowserAp
     ssr: false
 });
 
+const RepoDetailView = dynamic(() => import('@/features/portfolio/components/RepoDetailView').then(mod => mod.RepoDetailView), {
+    loading: () => <div className="p-4 text-pastel-text">Loading Repository...</div>,
+    ssr: false
+});
+
+const ArticleDetailView = dynamic(() => import('@/features/portfolio/components/ArticleDetailView').then(mod => mod.ArticleDetailView), {
+    loading: () => <div className="p-4 text-pastel-text">Loading Article...</div>,
+    ssr: false
+});
+
 // Simple content renderer based on type
 const WindowContentRenderer = ({ type, content }: { type: string, content: WindowContent }) => {
     if (type === 'component') {
@@ -49,7 +59,21 @@ const WindowContentRenderer = ({ type, content }: { type: string, content: Windo
             return <FileExplorer initialPath={content.initialPath} />;
         }
 
+        // Handle Detail Views
+        if (typeof content === 'object' && content && content.app === 'repo-detail' && content.data) {
+            const { repo, owner } = content.data as { repo: { id: number; name: string; description: string | null; html_url: string; language: string | null; stargazers_count: number; updated_at: string; topics: string[] }; owner: string };
+            return <RepoDetailView repo={repo} owner={owner} />;
+        }
+        if (typeof content === 'object' && content && content.app === 'article-detail' && content.data) {
+            const article = content.data as { title: string; link: string; date: string; thumbnail?: string };
+            return <ArticleDetailView article={article} />;
+        }
+
         return <div className="p-4">Component: {typeof content === 'string' ? content : 'Unknown'}</div>;
+    }
+    if (type === 'browser') {
+        // Fallback to simulated browser
+        return <BrowserApp />;
     }
     if (type === 'markdown' && typeof content === 'string') {
         return (

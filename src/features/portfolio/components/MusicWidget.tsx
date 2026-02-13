@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Play, Pause, SkipForward, SkipBack, Volume2, Volume1, VolumeX, Music } from 'lucide-react';
+import { useAudioAnalyser } from '@/features/portfolio/context/AudioAnalyserContext';
 
 const PLAYLIST = [
     { title: "Bus Stop", artist: "HoliznaCC0", src: "/music/bus-stop.ogg" },
@@ -16,19 +17,48 @@ export const MusicWidget = () => {
     const [isMuted, setIsMuted] = useState(false);
     const [prevVolume, setPrevVolume] = useState(0.5);
     const audioRef = React.useRef<HTMLAudioElement | null>(null);
+    const { connectAudio, getFrequencyData } = useAudioAnalyser();
 
     const currentTrack = PLAYLIST[currentTrackIndex];
+
+    // Visualizer refs and animation
+    const VIZ_BARS = 8;
+    const vizBarRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+    const vizRafId = React.useRef<number>(0);
+
+    React.useEffect(() => {
+        const tick = () => {
+            const data = getFrequencyData();
+            for (let i = 0; i < VIZ_BARS; i++) {
+                const el = vizBarRefs.current[i];
+                if (!el) continue;
+                if (data) {
+                    const bin = Math.min(i + 1, data.length - 1);
+                    const v = data[bin] / 255;
+                    el.style.height = `${Math.max(4, v * 28)}px`;
+                    el.style.opacity = `${0.3 + v * 0.6}`;
+                } else {
+                    el.style.height = '4px';
+                    el.style.opacity = '0.15';
+                }
+            }
+            vizRafId.current = requestAnimationFrame(tick);
+        };
+        vizRafId.current = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(vizRafId.current);
+    }, [getFrequencyData]);
 
     React.useEffect(() => {
         if (audioRef.current) {
             audioRef.current.volume = isMuted ? 0 : volume;
             if (isPlaying) {
+                connectAudio(audioRef.current);
                 audioRef.current.play().catch(e => console.error("Audio play failed:", e));
             } else {
                 audioRef.current.pause();
             }
         }
-    }, [isPlaying, currentTrackIndex, volume, isMuted]);
+    }, [isPlaying, currentTrackIndex, volume, isMuted, connectAudio]);
 
     const handleNext = () => {
         setCurrentTrackIndex((prev) => (prev + 1) % PLAYLIST.length);
@@ -57,7 +87,7 @@ export const MusicWidget = () => {
         setIsMuted(newVolume === 0);
     };
 
-    const VolumeIcon = () => {
+    const getVolumeIcon = () => {
         if (isMuted || volume === 0) return <VolumeX size={14} />;
         if (volume < 0.5) return <Volume1 size={14} />;
         return <Volume2 size={14} />;
@@ -65,13 +95,21 @@ export const MusicWidget = () => {
 
     return (
         <div className="relative">
-            {/* GFX: Top-right barcode bars */}
-            <div className="absolute top-2 right-2 flex gap-1 z-0 opacity-20">
-                <div className="w-1 h-3 bg-mai-primary" />
-                <div className="w-1 h-5 bg-mai-primary" />
-                <div className="w-1 h-3 bg-mai-text" />
-                <div className="w-1 h-4 bg-mai-text" />
-                <div className="w-1 h-2 bg-mai-primary" />
+            {/* Audio Visualizer — real-time frequency bars */}
+            <div className="absolute top-2 right-2 flex items-start gap-[2px] z-0 h-7">
+                {Array.from({ length: VIZ_BARS }).map((_, i) => (
+                    <div
+                        key={i}
+                        ref={el => { vizBarRefs.current[i] = el; }}
+                        className="w-1 rounded-sm"
+                        style={{
+                            height: '4px',
+                            opacity: 0.15,
+                            background: i % 2 === 0 ? 'var(--mai-primary)' : 'var(--mai-text)',
+                            transition: 'height 0.05s ease-out, opacity 0.05s ease-out'
+                        }}
+                    />
+                ))}
             </div>
 
             <div className="flex items-center gap-4 p-5 select-none relative z-10">
@@ -103,13 +141,6 @@ export const MusicWidget = () => {
                                 <span className="w-1.5 h-1.5 rounded-full bg-mai-primary opacity-50 animate-pulse" />
                                 <p className="text-mai-subtext text-[10px] uppercase tracking-widest truncate">{currentTrack.artist}</p>
                             </div>
-                        </div>
-                        {/* Tiny Barcode */}
-                        <div className="gfx-barcode h-4 opacity-20">
-                            <span style={{ width: 2, height: 8 }} />
-                            <span style={{ width: 1, height: 12 }} />
-                            <span style={{ width: 3, height: 6 }} />
-                            <span style={{ width: 1, height: 10 }} />
                         </div>
                     </div>
 
@@ -145,7 +176,7 @@ export const MusicWidget = () => {
                                 onClick={toggleMute}
                                 className="text-mai-subtext hover:text-mai-text transition-colors p-1"
                             >
-                                <VolumeIcon />
+                                {getVolumeIcon()}
                             </button>
                             <div className="w-20 h-4 flex items-center relative">
                                 <input

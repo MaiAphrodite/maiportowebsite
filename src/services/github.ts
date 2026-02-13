@@ -95,3 +95,26 @@ export const inferTechStack = (repos: GithubRepo[]): string[] => {
 
     return Array.from(languages).slice(0, 8); // Top 8
 };
+
+export const fetchRepoReadme = async (owner: string, repo: string): Promise<string | null> => {
+    try {
+        const cacheKey = `github_readme_${owner}_${repo}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            const { data, timestamp } = JSON.parse(cached);
+            if (Date.now() - timestamp < 1000 * 60 * 60) return data;
+        }
+
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
+            headers: { Accept: 'application/vnd.github.raw+json' }
+        });
+        if (!response.ok) return null;
+        const data = await response.text();
+
+        localStorage.setItem(cacheKey, JSON.stringify({ data, timestamp: Date.now() }));
+        return data;
+    } catch (error) {
+        console.error('Error fetching README:', error);
+        return null;
+    }
+};

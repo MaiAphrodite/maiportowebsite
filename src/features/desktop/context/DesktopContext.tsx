@@ -3,7 +3,8 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useRef } from 'react';
 import { topoTransitionRef } from '@/lib/topoTransitionBridge';
 
-export type WindowContent = string | null | { app: string; initialPath?: string[] } | 'welcome';
+
+export type WindowContent = string | null | { app: string; initialPath?: string[]; url?: string; data?: unknown } | 'welcome';
 
 export interface WindowState {
     id: string;
@@ -76,9 +77,15 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
 
         const applyTheme = () => {
+            // Add transition class BEFORE changing theme so CSS transitions kick in
+            document.documentElement.classList.add('theme-transitioning');
             setTheme(newTheme);
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('mai-theme', newTheme);
+            // Remove after transitions complete
+            setTimeout(() => {
+                document.documentElement.classList.remove('theme-transitioning');
+            }, 500);
         };
 
         // Topographic flood fill transition
