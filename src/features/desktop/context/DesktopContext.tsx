@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useRef } from 'react';
-import { topoTransitionRef } from '@/lib/topoTransitionBridge';
+import { topoTransitionRef } from '@/features/desktop/lib/topoTransitionBridge';
 
 
 export type WindowContent = string | null | { app: string; initialPath?: string[]; url?: string; data?: unknown } | 'welcome';

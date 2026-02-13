@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ExternalLink, Calendar, BookOpen } from 'lucide-react';
-import { MediumArticle } from '@/services/medium';
+import { MediumArticle } from '@/features/portfolio/services/medium';
 
 interface ArticleDetailViewProps {
     article: MediumArticle;

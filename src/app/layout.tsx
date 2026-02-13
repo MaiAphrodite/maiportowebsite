@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { M_PLUS_Rounded_1c, Fredoka } from "next/font/google";
 import "./globals.css";
-import WavesBackground from "@/components/ui/WavesBackground";
+import WavesBackground from "@/features/desktop/components/WavesBackground";
 
 const mPlus = M_PLUS_Rounded_1c({
   weight: ["100", "300", "400", "500", "700", "800", "900"],

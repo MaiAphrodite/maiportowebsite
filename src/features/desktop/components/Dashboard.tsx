@@ -6,8 +6,8 @@ import { MusicWidget } from '@/features/portfolio/components/MusicWidget';
 import { useDesktopActions, WindowContent } from '@/features/desktop/context/DesktopContext';
 import { Folder, Terminal, Globe, ArrowRight, Mail, Github } from 'lucide-react';
 import { fileSystem, FileSystemItem } from '@/features/files/data/fileSystem';
-import { fetchGithubRepos, GithubRepo, fetchGithubUser, GithubUserProfile, inferTechStack } from '@/services/github';
-import { fetchMediumArticles, MediumArticle } from '@/services/medium';
+import { fetchGithubRepos, GithubRepo, fetchGithubUser, GithubUserProfile, inferTechStack } from '@/features/portfolio/services/github';
+import { fetchMediumArticles, MediumArticle } from '@/features/portfolio/services/medium';
 import { useState, useEffect } from 'react';
 
 

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Star, GitFork, ExternalLink, Code, Calendar, Globe } from 'lucide-react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { GithubRepo, fetchRepoReadme } from '@/services/github';
+import { GithubRepo, fetchRepoReadme } from '@/features/portfolio/services/github';
 
 interface RepoDetailViewProps {
     repo: GithubRepo;

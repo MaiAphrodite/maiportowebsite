@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { CloudflareTTS } from '@/lib/tts/CloudflareTTS';
+import { CloudflareTTS } from '@/features/chat/lib/tts/CloudflareTTS';
 
 export async function POST(req: NextRequest) {
     try {

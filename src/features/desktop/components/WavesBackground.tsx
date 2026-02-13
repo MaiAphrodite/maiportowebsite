@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { topoFieldRef, topoTransitionRef } from '@/lib/topoTransitionBridge';
+import { topoFieldRef, topoTransitionRef } from '@/features/desktop/lib/topoTransitionBridge';
 
 // Helper: simple eased interpolation
 function easeInOutCubic(t: number): number {

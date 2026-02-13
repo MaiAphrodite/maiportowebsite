@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useDesktopActions } from '@/features/desktop/context/DesktopContext';
 import { ArrowRight, Folder, Mail, Github, Globe } from 'lucide-react';
 
-import { GithubUserProfile } from '@/services/github';
+import { fetchGithubUser, GithubUserProfile } from '@/features/portfolio/services/github';
 
 interface WelcomeAppProps {
     profile?: GithubUserProfile | null;
