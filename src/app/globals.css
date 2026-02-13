@@ -365,6 +365,7 @@ body {
   height: 24px;
   pointer-events: none;
   z-index: 1;
+  opacity: 0.85;
 }
 
 .gfx-corner-tl {
@@ -834,6 +835,61 @@ body {
   animation: marquee 20s linear infinite;
 }
 
-.animate-marquee:hover {
-  animation-play-state: paused;
+/* --- BLEED BAR / SIDE GUTTER UTILITIES --- */
+
+.gfx-gutter-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 2rem;
+  /* w-8 equivalent */
+  flex-shrink: 0;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  pointer-events: none;
+  user-select: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+}
+
+
+.gfx-reg-target {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--mai-text);
+  border-radius: 50%;
+  opacity: 0.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem auto;
+}
+
+.gfx-reg-target::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: var(--mai-text);
+}
+
+.gfx-reg-target::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 100%;
+  background: var(--mai-text);
+}
+
+.gfx-vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: 'Code New Roman', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--mai-subtext);
+  opacity: 0.5;
+  white-space: nowrap;
+  text-align: center;
 }
