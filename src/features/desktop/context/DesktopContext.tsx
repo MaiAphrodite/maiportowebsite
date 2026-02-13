@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useRef } from 'react';
+import { topoTransitionRef } from '@/lib/topoTransitionBridge';
 
 export type WindowContent = string | null | { app: string; initialPath?: string[] } | 'welcome';
 
@@ -71,7 +72,6 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
     }, [windows, activeWindowId, maxZIndex, theme]);
 
     const toggleTheme = React.useCallback((coords?: { x: number; y: number }) => {
-        void coords; // coords reserved for future use
         const currentTheme = stateRef.current.theme;
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
 
@@ -81,8 +81,10 @@ export const DesktopProvider = ({ children }: { children: ReactNode }) => {
             localStorage.setItem('mai-theme', newTheme);
         };
 
-        // CRT transition via View Transitions API — CSS handles the animation
-        if (document.startViewTransition) {
+        // Topographic flood fill transition
+        if (topoTransitionRef.current) {
+            topoTransitionRef.current(newTheme, applyTheme, coords);
+        } else if (document.startViewTransition) {
             document.startViewTransition(applyTheme);
         } else {
             applyTheme();

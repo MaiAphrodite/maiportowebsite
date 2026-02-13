@@ -302,6 +302,18 @@ export const Dashboard = () => {
                                             {/* Card index */}
                                             <span className="absolute top-3 right-4 gfx-slash-label">{'// 0'}{idx + 1}</span>
 
+                                            {/* GFX: Chevron arrows */}
+                                            <div className="absolute bottom-3 right-4 flex gap-0.5 opacity-10">
+                                                <span className="text-[10px] font-mono text-mai-text">▶▶▶</span>
+                                            </div>
+
+                                            {/* GFX: Caution label for first card */}
+                                            {idx === 0 && (
+                                                <div className="absolute bottom-3 left-4 flex items-center gap-1 opacity-15">
+                                                    <span className="text-[8px] font-mono text-mai-text tracking-widest">⚠ REMOVABLE MODULE</span>
+                                                </div>
+                                            )}
+
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className="p-3 bg-mai-primary/20 text-mai-primary rounded-2xl">
                                                     {repo.language === 'TypeScript' || repo.language === 'JavaScript' ? <Globe size={24} /> : <Terminal size={24} />}
@@ -317,13 +329,14 @@ export const Dashboard = () => {
                                             <p className="text-mai-subtext text-sm mb-4 line-clamp-2 flex-grow">
                                                 {repo.description || 'No description provided.'}
                                             </p>
-                                            <div className="flex gap-2 text-xs font-mono text-mai-primary/80 mt-auto">
+                                            <div className="flex items-center gap-2 text-xs font-mono text-mai-primary/80 mt-auto">
                                                 {repo.language && (
                                                     <span className="px-2 py-1 bg-mai-primary/10 rounded-md">{repo.language}</span>
                                                 )}
                                                 <span className="px-2 py-1 bg-mai-text/5 rounded-md text-mai-subtext">
                                                     {new Date(repo.updated_at).toLocaleDateString()}
                                                 </span>
+                                                <span className="gfx-hash ml-auto">GRM-{String(repo.id).slice(-4)}</span>
                                             </div>
                                         </div>
                                     ))
@@ -345,6 +358,10 @@ export const Dashboard = () => {
                         <div className="relative">
                             {/* Stripe fill on writes section */}
                             <div className="gfx-stripe-block absolute -right-3 top-10 w-16 h-28 hidden lg:block" />
+
+                            {/* GFX: Danger kanji watermark */}
+                            <div className="absolute -right-2 top-0 text-mai-text opacity-[0.03] text-6xl font-bold pointer-events-none select-none hidden lg:block" style={{ fontFamily: 'var(--font-mplus)' }}>危険</div>
+
                             <div className="flex items-center gap-3 mb-5">
                                 <span className="gfx-section-number">02</span>
                                 <span className="text-mai-text font-light text-lg tracking-wide">Writes</span>
@@ -365,16 +382,27 @@ export const Dashboard = () => {
                                             href={article.link}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="group flex items-center gap-4 backdrop-blur-md rounded-2xl p-4 transition-all"
+                                            className="group relative flex items-center gap-4 backdrop-blur-md rounded-2xl p-4 transition-all"
                                             style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}
                                         >
+                                            {/* GFX: Bracket decorations */}
+                                            <div className="absolute top-1 left-1 w-2 h-2 border-t border-l border-mai-primary/20" />
+                                            <div className="absolute bottom-1 right-1 w-2 h-2 border-b border-r border-mai-primary/20" />
+
                                             {/* Article number */}
                                             <span className="gfx-boxed">{String(index + 1).padStart(2, '0')}</span>
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="text-mai-text font-medium truncate group-hover:text-mai-primary transition-colors">{article.title}</h4>
-                                                <p className="text-mai-subtext text-xs mt-1">{article.date} • Medium</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <p className="text-mai-subtext text-xs">{article.date} • Medium</p>
+                                                    <span className="gfx-hash">SEC_{String(index + 1).padStart(2, '0')}</span>
+                                                </div>
                                             </div>
-                                            <ArrowRight size={16} className="text-mai-subtext/40 group-hover:text-mai-text group-hover:translate-x-1 transition-all" />
+                                            {/* GFX: Directional arrow cluster */}
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-mai-subtext/10 text-[10px] font-mono">→→</span>
+                                                <ArrowRight size={16} className="text-mai-subtext/40 group-hover:text-mai-text group-hover:translate-x-1 transition-all" />
+                                            </div>
                                         </a>
                                     ))
                                 )}
@@ -391,6 +419,7 @@ export const Dashboard = () => {
                                 <span className="gfx-sq" />
                                 <span>{articles.length || '—'} entries</span>
                                 <span>＋</span>
+                                <span className="gfx-jp">通り</span>
                                 <Barcode />
                             </div>
                         </div>
@@ -399,7 +428,13 @@ export const Dashboard = () => {
                     {/* Right Column / Sidebar */}
                     <div className="lg:col-span-4 flex flex-col gap-6">
                         {/* Audio Player */}
-                        <div className="bg-gradient-to-br from-mai-accent/20 to-mai-primary/20 backdrop-blur-xl border border-mai-border/10 rounded-3xl overflow-hidden shadow-lg">
+                        <div className="relative bg-gradient-to-br from-mai-accent/20 to-mai-primary/20 backdrop-blur-xl border border-mai-border/10 rounded-xl shadow-lg">
+                            <div className="gfx-corner-tl" style={{ width: '16px', height: '16px' }} />
+                            <div className="gfx-corner-br" style={{ width: '16px', height: '16px' }} />
+                            {/* GFX: Chevron strip — bottom-right corner, behind content */}
+                            <div className="absolute bottom-1 right-4 flex items-center gap-1 opacity-10 z-0 pointer-events-none">
+                                <span className="text-[7px] font-mono text-mai-text tracking-[0.15em]">◀◀◀ ONEWAY</span>
+                            </div>
                             <MusicWidget />
                         </div>
 
@@ -408,9 +443,16 @@ export const Dashboard = () => {
                             <div className="gfx-corner-tl" style={{ width: '16px', height: '16px' }} />
                             <div className="gfx-corner-br" style={{ width: '16px', height: '16px' }} />
 
+                            {/* GFX: Caution kanji */}
+                            <div className="absolute top-2 right-4 opacity-[0.04] text-3xl font-bold pointer-events-none select-none" style={{ fontFamily: 'var(--font-mplus)' }}>警告</div>
+
+                            {/* GFX: Diagonal hatch marks */}
+                            <div className="absolute -bottom-1 -left-1 w-8 h-8 gfx-stripes rounded-sm opacity-30" />
+
                             <div className="flex items-center gap-3 mb-4">
                                 <span className="gfx-section-number">03</span>
                                 <span className="text-mai-text font-light text-sm tracking-wide">Desktop</span>
+                                <span className="gfx-jp ml-1">デスク</span>
                                 <span className="gfx-cross ml-auto">＋</span>
                                 <span className="gfx-meta">{fileSystem.length} items</span>
                             </div>
@@ -443,23 +485,51 @@ export const Dashboard = () => {
                                 <span>hyprland rice</span>
                                 <span className="gfx-sq" />
                                 <span>catppuccin</span>
+                                <span className="gfx-sq" />
+                                <span>フォワード</span>
                             </div>
                         </div>
 
                         {/* 04 — Tech Stack */}
                         <div className="relative backdrop-blur-md rounded-3xl p-6 flex-1" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+                            {/* GFX: Corner brackets */}
+                            <div className="gfx-corner-tl" style={{ width: '12px', height: '12px' }} />
+                            <div className="gfx-corner-br" style={{ width: '12px', height: '12px' }} />
+
+                            {/* GFX: CLASS label */}
+                            <div className="absolute top-2 right-4 flex items-center gap-2">
+                                <span className="gfx-hash">CLASS GRM-976</span>
+                                <span className="gfx-reg-mark" />
+                            </div>
+
+                            {/* GFX: Watermark kanji */}
+                            <div className="absolute bottom-2 right-4 opacity-[0.04] text-4xl font-bold pointer-events-none select-none" style={{ fontFamily: 'var(--font-mplus)' }}>通り</div>
+
                             <div className="flex items-center gap-3 mb-4">
                                 <span className="gfx-section-number">04</span>
                                 <span className="text-mai-text font-light text-sm tracking-wide">Stack</span>
+                                <span className="gfx-jp ml-1">技術</span>
                                 <span className="gfx-cross ml-auto">＋</span>
                                 <span className="gfx-slash-label">{'// tech specs'}</span>
                             </div>
+
+                            {/* GFX: +5HP badge */}
+                            <div className="flex items-center gap-1 mb-3 opacity-20">
+                                <span className="text-[9px] font-mono font-bold text-mai-text tracking-wider">▼ +5HP</span>
+                                <div className="flex gap-px">
+                                    <div className="w-1 h-2 bg-mai-text" />
+                                    <div className="w-1 h-3 bg-mai-text" />
+                                    <div className="w-1 h-2 bg-mai-text" />
+                                </div>
+                            </div>
+
                             <div className="flex flex-wrap gap-2">
                                 {loading ? (
                                     <div className="h-6 w-full rounded-full animate-pulse" style={{ background: 'var(--card-bg)' }} />
                                 ) : (
-                                    (techStack.length > 0 ? techStack : ['Next.js', 'React', 'TypeScript']).map(tech => (
-                                        <span key={tech} className="px-3 py-1 bg-mai-text/5 rounded-full text-xs text-mai-subtext border border-mai-border/10">
+                                    (techStack.length > 0 ? techStack : ['Next.js', 'React', 'TypeScript']).map((tech, i) => (
+                                        <span key={tech} className="px-3 py-1 bg-mai-text/5 rounded-full text-xs text-mai-subtext border border-mai-border/10 flex items-center gap-1.5">
+                                            <span className="w-1 h-1 rounded-full bg-mai-primary/40" />
                                             {tech}
                                         </span>
                                     ))
@@ -468,6 +538,11 @@ export const Dashboard = () => {
 
                             {/* Tech colophon */}
                             <div className="gfx-data-row mt-4 pt-3 border-t border-mai-border/10">
+                                <span>GRM. 034</span>
+                                <span className="gfx-sq" />
+                                <span>SPEC RACING IND.</span>
+                                <span>→→</span>
+                                <span className="gfx-sq" />
                                 <span>Next.js</span>
                                 <span className="gfx-sq" />
                                 <span>Tailwind v4</span>
