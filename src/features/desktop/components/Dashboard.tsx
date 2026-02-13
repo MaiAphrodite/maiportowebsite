@@ -10,17 +10,6 @@ import { fetchGithubRepos, GithubRepo, fetchGithubUser, GithubUserProfile, infer
 import { fetchMediumArticles, MediumArticle } from '@/services/medium';
 import { useState, useEffect } from 'react';
 
-// CSS-only barcode generator
-const Barcode = () => {
-    const bars = [2, 1, 3, 1, 2, 1, 1, 3, 2, 1, 1, 2, 3, 1, 2, 1, 1, 3, 1, 2, 1, 3, 2, 1, 1, 2, 1, 3, 1, 2];
-    return (
-        <div className="gfx-barcode">
-            {bars.map((w, i) => (
-                <span key={i} style={{ width: `${w}px`, height: `${12 + (i % 3) * 6}px` }} />
-            ))}
-        </div>
-    );
-};
 
 export const Dashboard = () => {
     const { openWindow } = useDesktopActions();
@@ -213,7 +202,7 @@ export const Dashboard = () => {
                                 </a>
                             </div>
                             {/* Barcode decoration */}
-                            <Barcode />
+
                         </div>
                     </div>
 
@@ -289,7 +278,13 @@ export const Dashboard = () => {
                                     projects.slice(0, 4).map((repo, idx) => (
                                         <div
                                             key={repo.id}
-                                            onClick={() => window.open(repo.html_url, '_blank')}
+                                            onClick={() => openWindow({
+                                                id: `repo-${repo.name}`,
+                                                title: repo.name,
+                                                type: 'component',
+                                                content: { app: 'repo-detail', data: { repo, owner: 'MaiAphrodite' } },
+                                                size: { width: 900, height: 600 }
+                                            })}
                                             className="group relative backdrop-blur-md rounded-3xl p-6 cursor-pointer transition-all hover:scale-[1.02] flex flex-col h-full"
                                             style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}
                                             onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--card-hover-bg)'; e.currentTarget.style.borderColor = 'var(--card-hover-border)'; }}
@@ -377,12 +372,16 @@ export const Dashboard = () => {
                                     <div className="h-24 rounded-2xl animate-pulse" style={{ background: 'var(--card-bg)' }} />
                                 ) : (
                                     articles.slice(0, 3).map((article, index) => (
-                                        <a
+                                        <div
                                             key={index}
-                                            href={article.link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="group relative flex items-center gap-4 backdrop-blur-md rounded-2xl p-4 transition-all"
+                                            onClick={() => openWindow({
+                                                id: `article-${index}`,
+                                                title: article.title,
+                                                type: 'component',
+                                                content: { app: 'article-detail', data: article },
+                                                size: { width: 600, height: 500 }
+                                            })}
+                                            className="group relative flex items-center gap-4 backdrop-blur-md rounded-2xl p-4 transition-all cursor-pointer"
                                             style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}
                                         >
                                             {/* GFX: Bracket decorations */}
@@ -403,7 +402,7 @@ export const Dashboard = () => {
                                                 <span className="text-mai-subtext/10 text-[10px] font-mono">→→</span>
                                                 <ArrowRight size={16} className="text-mai-subtext/40 group-hover:text-mai-text group-hover:translate-x-1 transition-all" />
                                             </div>
-                                        </a>
+                                        </div>
                                     ))
                                 )}
                                 {!loading && articles.length === 0 && (
@@ -420,7 +419,7 @@ export const Dashboard = () => {
                                 <span>{articles.length || '—'} entries</span>
                                 <span>＋</span>
                                 <span className="gfx-jp">通り</span>
-                                <Barcode />
+
                             </div>
                         </div>
                     </div>
@@ -527,7 +526,7 @@ export const Dashboard = () => {
                                 {loading ? (
                                     <div className="h-6 w-full rounded-full animate-pulse" style={{ background: 'var(--card-bg)' }} />
                                 ) : (
-                                    (techStack.length > 0 ? techStack : ['Next.js', 'React', 'TypeScript']).map((tech, i) => (
+                                    (techStack.length > 0 ? techStack : ['Next.js', 'React', 'TypeScript']).map((tech) => (
                                         <span key={tech} className="px-3 py-1 bg-mai-text/5 rounded-full text-xs text-mai-subtext border border-mai-border/10 flex items-center gap-1.5">
                                             <span className="w-1 h-1 rounded-full bg-mai-primary/40" />
                                             {tech}
@@ -553,7 +552,7 @@ export const Dashboard = () => {
 
                         {/* Barcode + credits at bottom */}
                         <div className="flex items-center justify-between px-2">
-                            <Barcode />
+
                             <div className="flex flex-col items-end gap-0.5">
                                 <span className="gfx-meta">DESIGN BY</span>
                                 <span className="gfx-meta" style={{ opacity: 0.8, fontWeight: 700 }}>MAI APHRODITE</span>
@@ -596,7 +595,7 @@ export const Dashboard = () => {
                     {/* Final proof marks row */}
                     <div className="flex items-center justify-between mt-4">
                         <div className="flex items-center gap-3">
-                            <Barcode />
+
                             <span className="gfx-sec-code">SEC_EP</span>
                         </div>
                         <div className="flex items-center gap-2">

@@ -44,6 +44,7 @@ const WavesBackground = () => {
 
         // Theme colors — locked during transition to avoid flicker
         let currentThemeColors = { line: '', fill: '', accent: '' };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let nextThemeColors = { line: '', fill: '', accent: '' };
 
         let field: Float32Array;
