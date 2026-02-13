@@ -18,7 +18,7 @@ const WavesBackground = () => {
     const transitionState = useRef({
         isActive: false,
         startTime: 0,
-        duration: 2000,
+        duration: 1200,          // Faster than before (was 2000)
         targetTheme: 'dark' as 'light' | 'dark',
         onComplete: null as (() => void) | null,
         hasSwapped: false,
@@ -38,14 +38,13 @@ const WavesBackground = () => {
         let height = 0;
         let time = 0;
 
-        // OPTIMIZATION: Further increased cellSize for better performance
         const cellSize = 18;
         const contourCount = 6;
         const speed = 0.005;
 
-        // Colors
-        let currentThemeColors = { line: '', bg: '' };
-        let nextThemeColors = { line: '', bg: '' };
+        // Theme colors — locked during transition to avoid flicker
+        let currentThemeColors = { line: '', fill: '', accent: '' };
+        let nextThemeColors = { line: '', fill: '', accent: '' };
 
         let field: Float32Array;
         let cols = 0;
@@ -82,18 +81,21 @@ const WavesBackground = () => {
             rows = Math.ceil(height / cellSize) + 2;
             field = new Float32Array(cols * rows);
 
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            currentThemeColors = getThemeColors(isDark ? 'dark' : 'light');
-            nextThemeColors = getThemeColors(isDark ? 'light' : 'dark');
+            // Don't recalculate colors during transition — that causes flicker
+            if (!transitionState.current.isActive) {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                currentThemeColors = getThemeColors(isDark ? 'dark' : 'light');
+                nextThemeColors = getThemeColors(isDark ? 'light' : 'dark');
+            }
         };
 
         const handleMouseMove = (e: MouseEvent) => {
             const prev = mouseRef.current;
             const vx = e.clientX - prev.x;
             const vy = e.clientY - prev.y;
-            const speed = Math.sqrt(vx * vx + vy * vy);
+            const spd = Math.sqrt(vx * vx + vy * vy);
 
-            if (speed > 2) {
+            if (spd > 2) {
                 stirTrailRef.current.push({
                     x: e.clientX,
                     y: e.clientY,
@@ -115,8 +117,8 @@ const WavesBackground = () => {
                 const ty = e.touches[0].clientY;
                 const vx = tx - prev.x;
                 const vy = ty - prev.y;
-                const speed = Math.sqrt(vx * vx + vy * vy);
-                if (speed > 2) {
+                const spd = Math.sqrt(vx * vx + vy * vy);
+                if (spd > 2) {
                     stirTrailRef.current.push({ x: tx, y: ty, vx, vy, life: 1.0 });
                     if (stirTrailRef.current.length > 30) stirTrailRef.current.shift();
                 }
@@ -127,15 +129,15 @@ const WavesBackground = () => {
         const lerp = (a: number, b: number, level: number) => (level - a) / (b - a);
 
         const draw = (now: number) => {
-            let tProgress = 0;
             let eProgress = 0;
 
             if (transitionState.current.isActive) {
                 const elapsed = now - transitionState.current.startTime;
-                tProgress = Math.min(elapsed / transitionState.current.duration, 1.0);
+                const tProgress = Math.min(elapsed / transitionState.current.duration, 1.0);
                 eProgress = easeInOutCubic(tProgress);
 
-                if (tProgress > 0.6 && !transitionState.current.hasSwapped) {
+                // Swap theme at 50% (middle of animation — less visible)
+                if (tProgress > 0.5 && !transitionState.current.hasSwapped) {
                     transitionState.current.hasSwapped = true;
                     if (transitionState.current.onComplete) {
                         transitionState.current.onComplete();
@@ -144,6 +146,9 @@ const WavesBackground = () => {
 
                 if (tProgress >= 1.0) {
                     transitionState.current.isActive = false;
+                    // Sync colors to the new theme
+                    currentThemeColors = getThemeColors(transitionState.current.targetTheme);
+                    nextThemeColors = getThemeColors(transitionState.current.targetTheme === 'dark' ? 'light' : 'dark');
                 }
             }
 
@@ -212,14 +217,18 @@ const WavesBackground = () => {
                 }
             }
 
+            // Expose field for external use
+            if (topoFieldRef) {
+                topoFieldRef.current = { field, cols, rows, cellSize, width, height, minVal, maxVal };
+            }
 
             // Draw Logic
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
 
-            const drawContours = (currentCtx: CanvasRenderingContext2D, isNewTheme: boolean) => {
-                currentCtx.strokeStyle = isNewTheme ? nextThemeColors.line : currentThemeColors.line;
-                currentCtx.lineWidth = isNewTheme ? 1.2 : 0.8;
+            const drawContours = (currentCtx: CanvasRenderingContext2D, strokeStyle: string, lineWidth: number) => {
+                currentCtx.strokeStyle = strokeStyle;
+                currentCtx.lineWidth = lineWidth;
 
                 for (let c = 0; c < contourCount; c++) {
                     const level = minVal + (maxVal - minVal) * (c + 1) / (contourCount + 1);
@@ -258,21 +267,17 @@ const WavesBackground = () => {
                 }
             };
 
-            // 1. Draw OLD Theme
-            drawContours(ctx, false);
+            // 1. Draw current theme contours
+            drawContours(ctx, currentThemeColors.line, 0.8);
 
-            // 2. Draw NEW Theme (Peak Flood Mask)
+            // 2. Draw flood fill mask for new theme during transition
             if (transitionState.current.isActive) {
                 const nextColors = getThemeColors(transitionState.current.targetTheme);
                 const range = maxVal - minVal;
                 const buffer = range * 0.1;
                 const floodLevel = (maxVal + buffer) - ((range + buffer * 2) * eProgress);
 
-                // --- OPTIMIZED SINGLE PASS ---
-                // We combine the fill path generation and logic to avoid redundant iterations if possible
-                // But for now, we just rely on the coarser grid (cellSize=18)
-
-                // Fill Path
+                // Fill the flooded area with the new theme background
                 ctx.save();
                 ctx.beginPath();
 
@@ -324,57 +329,7 @@ const WavesBackground = () => {
                 ctx.fillStyle = nextColors.fill;
                 ctx.fill();
                 ctx.clip();
-                drawContours(ctx, true);
-                ctx.restore();
-
-
-                // --- PASS 2: SHORELINE (No Glow for Perf) ---
-                // Removed shadowBlur to fix lag
-
-                ctx.save();
-                ctx.beginPath();
-
-                for (let row = 0; row < rows - 1; row++) {
-                    for (let col = 0; col < cols - 1; col++) {
-                        const idx = row * cols + col;
-                        const tl = field[idx]; const tr = field[idx + 1];
-                        const bl = field[idx + cols]; const br = field[idx + cols + 1];
-
-                        let ci = 0;
-                        if (tl > floodLevel) ci |= 1; if (tr > floodLevel) ci |= 2;
-                        if (br > floodLevel) ci |= 4; if (bl > floodLevel) ci |= 8;
-                        if (ci === 0 || ci === 15) continue;
-
-                        const x0 = col * cellSize; const y0 = row * cellSize;
-                        const pt = (v1: number, v2: number) => lerp(v1, v2, floodLevel) * cellSize;
-                        const topX = x0 + pt(tl, tr); const topY = y0;
-                        const rightX = x0 + cellSize; const rightY = y0 + pt(tr, br);
-                        const bottomX = x0 + pt(bl, br); const bottomY = y0 + cellSize;
-                        const leftX = x0; const leftY = y0 + pt(tl, bl);
-
-                        switch (ci) {
-                            case 1: ctx.moveTo(topX, topY); ctx.lineTo(leftX, leftY); break;
-                            case 2: ctx.moveTo(topX, topY); ctx.lineTo(rightX, rightY); break;
-                            case 3: ctx.moveTo(leftX, leftY); ctx.lineTo(rightX, rightY); break;
-                            case 4: ctx.moveTo(rightX, rightY); ctx.lineTo(bottomX, bottomY); break;
-                            case 5: ctx.moveTo(topX, topY); ctx.lineTo(leftX, leftY); ctx.moveTo(rightX, rightY); ctx.lineTo(bottomX, bottomY); break;
-                            case 6: ctx.moveTo(topX, topY); ctx.lineTo(bottomX, bottomY); break;
-                            case 7: ctx.moveTo(leftX, leftY); ctx.lineTo(bottomX, bottomY); break;
-                            case 8: ctx.moveTo(leftX, leftY); ctx.lineTo(bottomX, bottomY); break;
-                            case 9: ctx.moveTo(topX, topY); ctx.lineTo(bottomX, bottomY); break;
-                            case 10: ctx.moveTo(topX, topY); ctx.lineTo(rightX, rightY); ctx.moveTo(leftX, leftY); ctx.lineTo(bottomX, bottomY); break;
-                            case 11: ctx.moveTo(rightX, rightY); ctx.lineTo(bottomX, bottomY); break;
-                            case 12: ctx.moveTo(leftX, leftY); ctx.lineTo(rightX, rightY); break;
-                            case 13: ctx.moveTo(topX, topY); ctx.lineTo(rightX, rightY); break;
-                            case 14: ctx.moveTo(topX, topY); ctx.lineTo(leftX, leftY); break;
-                        }
-                    }
-                }
-
-                // No shadowBlur here
-                ctx.strokeStyle = nextColors.accent;
-                ctx.lineWidth = 1.0;
-                ctx.stroke();
+                drawContours(ctx, nextColors.line, 1.2);
                 ctx.restore();
             }
 
@@ -386,10 +341,16 @@ const WavesBackground = () => {
 
         topoTransitionRef.current = (newTheme, onComplete, origin) => {
             const center = { x: width / 2, y: height / 2 };
+
+            // Lock in theme colors at transition start to prevent flicker
+            const oldTheme = newTheme === 'dark' ? 'light' : 'dark';
+            currentThemeColors = getThemeColors(oldTheme);
+            nextThemeColors = getThemeColors(newTheme);
+
             transitionState.current = {
                 isActive: true,
                 startTime: performance.now(),
-                duration: 2000,
+                duration: 1200,
                 targetTheme: newTheme,
                 onComplete: onComplete,
                 hasSwapped: false,
@@ -398,7 +359,10 @@ const WavesBackground = () => {
         };
 
         const observer = new MutationObserver(() => {
-            updateDimensions();
+            // Only update dimensions, NOT theme colors (handled by transition logic)
+            if (!transitionState.current.isActive) {
+                updateDimensions();
+            }
         });
         observer.observe(document.documentElement, {
             attributes: true,

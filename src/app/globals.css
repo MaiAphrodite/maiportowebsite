@@ -1,6 +1,21 @@
 @import "tailwindcss";
 
-/* View transitions disabled — using topographic flood fill instead */
+/* Smooth UI color transitions during topo theme change */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color 0.4s ease,
+    color 0.4s ease,
+    border-color 0.4s ease,
+    fill 0.4s ease,
+    stroke 0.4s ease !important;
+}
+
+/* Keep canvas instant — it handles its own transition */
+html.theme-transitioning canvas {
+  transition: none !important;
+}
 
 @font-face {
   font-family: 'Code New Roman';
@@ -417,20 +432,24 @@ body {
   opacity: 0.3;
 }
 
-/* Barcode-like decorative element */
-.gfx-barcode {
+/* Music visualizer bars */
+.gfx-visualizer {
   display: flex;
-  gap: 1px;
-  height: 28px;
+  gap: 2px;
+  height: 20px;
   align-items: flex-end;
   pointer-events: none;
   user-select: none;
-  opacity: 0.3;
 }
 
-.gfx-barcode span {
-  background: var(--mai-text);
+.gfx-visualizer span {
+  width: 2px;
+  height: 3px;
+  background: var(--mai-primary);
   display: block;
+  border-radius: 1px;
+  transition: height 0.06s ease-out, opacity 0.06s ease-out;
+  opacity: 0.3;
 }
 
 /* Top metadata bar */
