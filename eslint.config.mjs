@@ -13,7 +13,7 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "public/**",
-    "src/lib/tts/piper/piperPhonemize.js",
+    "src/features/chat/lib/tts/piper/piperPhonemize.js",
   ]),
 ]);
 
