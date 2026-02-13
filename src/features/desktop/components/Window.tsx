@@ -49,20 +49,21 @@ export const Window = React.memo(({ windowState, children }: WindowProps) => {
         <Draggable
             key={draggableKey}
             handle={isWidget ? ".widget-drag-handle" : ".window-header"}
+            cancel="button"
             position={isMaximized ? { x: 0, y: 0 } : windowState.position}
             nodeRef={nodeRef}
-            onStart={() => {
-                if (isMobile) return false;
+            onStart={(e) => {
                 focusWindow(id);
+                // Allow drag on non-maximized windows (including touch)
+                if (isMaximized) return false;
             }}
             onDrag={(e, data) => {
-                if (!isMaximized && !isMobile) {
-                    // Controlled mode: update state immediately
-                    // This prevents snapping and desync
+                if (!isMaximized) {
                     updateWindowPosition(id, { x: data.x, y: data.y });
                 }
             }}
-            disabled={isMaximized || isMobile}
+            disabled={isMaximized}
+            enableUserSelectHack={true}
         >
             <div
                 ref={nodeRef}
@@ -93,6 +94,7 @@ export const Window = React.memo(({ windowState, children }: WindowProps) => {
                     position: isMaximized ? 'fixed' : 'absolute'
                 }}
                 onMouseDown={() => focusWindow(id)}
+                onTouchStart={() => focusWindow(id)}
             >
                 {/* Visual Content Wrapper */}
                 <motion.div
